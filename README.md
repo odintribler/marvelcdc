@@ -82,7 +82,7 @@ Visit `http://localhost:3000` to access the application.
 
 ### Railway Deployment (Recommended)
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-id)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/marvelcdc)
 
 1. **One-click deployment**:
    - Click the Railway button above
@@ -94,23 +94,23 @@ Visit `http://localhost:3000` to access the application.
    ```bash
    # Install Railway CLI
    npm install -g @railway/cli
-   
+
    # Login to Railway
    railway login
-   
+
    # Initialize project
    railway init
-   
+
    # Add PostgreSQL database
    railway add postgresql
-   
+
    # Set environment variables
-   railway variables set JWT_SECRET=$(openssl rand -base64 64)
-   railway variables set NODE_ENV=production
-   
+   railway variables --set "JWT_SECRET=$(openssl rand -base64 64)"
+   railway variables --set "NODE_ENV=production"
+
    # Deploy
    railway up
-   
+
    # Run database migrations and seed data (via Railway dashboard or CLI)
    railway run npm run db:migrate
    railway run npm run db:seed

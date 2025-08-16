@@ -1,5 +1,5 @@
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
 
 [deploy]
 healthcheckPath = "/"
@@ -9,15 +9,3 @@ restartPolicyMaxRetries = 3
 
 [environments.production]
 variables = { NODE_ENV = "production" }
-
-[environments.production.services.web]
-builder = "nixpacks"
-buildCommand = "npm run build"
-startCommand = "npm run start"
-healthcheckPath = "/"
-healthcheckTimeout = 300
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
-
-[environments.production.services.web.variables]
-NIXPACKS_NODE_VERSION = "22.12.0"
