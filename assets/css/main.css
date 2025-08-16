@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Marvel Champions theme colors */
+:root {
+  --marvel-red: #ED1D24;
+  --marvel-blue: #0078D4;
+  --success-green: #4CAF50;
+  --warning-amber: #FF9800;
+  --error-red: #F44336;
+  --neutral-gray: #607D8B;
+}
+
+/* Custom component styles */
+.deck-card {
+  @apply bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200;
+}
+
+.status-indicator {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-ready {
+  @apply bg-green-100 text-green-800;
+}
+
+.status-conflicts {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.status-error {
+  @apply bg-red-100 text-red-800;
+}
+
+.status-inactive {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.btn-primary {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors duration-200;
+}
+
+/* Pack table responsive design */
+.pack-table-container {
+  @apply overflow-x-auto;
+}
+
+/* Mobile responsive table */
+@media (max-width: 768px) {
+  .pack-table-container table {
+    @apply text-xs;
+  }
+  
+  .pack-table-container th,
+  .pack-table-container td {
+    @apply px-3 py-2;
+  }
+  
+  /* Hide less important columns on small screens */
+  .pack-table-container .hide-mobile {
+    @apply hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .pack-table-container {
+    @apply rounded-none -mx-6;
+  }
+  
+  .pack-table-container table {
+    @apply text-xs;
+  }
+  
+  .pack-table-container th,
+  .pack-table-container td {
+    @apply px-2 py-2;
+  }
+}

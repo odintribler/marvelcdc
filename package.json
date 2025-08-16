@@ -1,0 +1,39 @@
+{
+  "name": "marvel-champions-collection-manager",
+  "version": "1.0.0",
+  "description": "A full-stack application for managing Marvel Champions LCG card collection and deck conflicts",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs",
+    "heroku-postbuild": "npm run build",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:generate": "npx prisma generate",
+    "db:seed": "npm run sync:marvelcdb",
+    "sync:marvelcdb": "tsx scripts/sync-marvelcdb-data.ts"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "^2.0.0",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@pinia/nuxt": "^0.11.2",
+    "@prisma/client": "^5.19.1",
+    "nuxt": "^4.0.3",
+    "pinia": "^3.0.3",
+    "prisma": "^5.19.1",
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.4"
+  }
+}

@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  collections Collection[]
+  decks       Deck[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  userId      Int       @map("user_id")
+  expiresAt   DateTime  @map("expires_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Pack {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique     // e.g., "core", "thor"
+  name      String              // e.g., "Core Set", "Thor"
+  type      String              // e.g., "core", "hero", "campaign"
+  released  DateTime            // Release date
+  position  Int?                // Release order
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  cards       Card[]
+  collections Collection[]
+  
+  @@map("packs")
+}
+
+model Card {
+  id       Int      @id @default(autoincrement())
+  code     String   @unique      // e.g., "01050"
+  name     String               // e.g., "Hulk" 
+  packCode String   @map("pack_code")
+  cardType String   @map("card_type")  // e.g., "ally", "event"
+  faction  String?              // e.g., "aggression", "protection"
+  cost     Int?
+  traits   String?
+  quantity Int      @default(1) // Copies per pack
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  pack      Pack       @relation(fields: [packCode], references: [code])
+  // deckCards DeckCard[] // Removed to avoid foreign key constraints
+  
+  @@map("cards")
+}
+
+model Collection {
+  id       Int      @id @default(autoincrement())
+  userId   Int      @map("user_id")
+  packCode String   @map("pack_code")
+  quantity Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  pack Pack @relation(fields: [packCode], references: [code])
+
+  @@unique([userId, packCode])
+  @@map("collections")
+}
+
+model Deck {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  marvelcdbId Int?     @map("marvelcdb_id")
+  name        String
+  heroCode    String   @map("hero_code")
+  heroName    String   @map("hero_name")
+  isActive    Boolean  @default(true) @map("is_active")
+  deckUrl     String?  @map("deck_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id])
+  deckCards DeckCard[]
+
+  @@unique([userId, marvelcdbId])
+  @@map("decks")
+}
+
+model DeckCard {
+  id       Int    @id @default(autoincrement())
+  deckId   Int    @map("deck_id")
+  cardCode String @map("card_code")
+  cardName String @map("card_name")
+  quantity Int
+  cardType String @map("card_type")
+  packCode String @map("pack_code")
+
+  // Relations
+  deck Deck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  // Optional relation to Card table (not enforced as foreign key to avoid constraints)
+  // card Card? @relation(fields: [cardCode], references: [code])
+
+  @@map("deck_cards")
+}
