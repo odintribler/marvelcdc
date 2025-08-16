@@ -2,7 +2,7 @@
 NODE_VERSION = "22.12.0"
 
 [phases.build]
-cmds = ["rm -rf node_modules/.cache", "npm ci --no-cache", "npx prisma generate", "npm run build"]
+cmds = ["npm ci", "npx prisma generate", "npm run build"]
 
 [phases.start]
 cmd = "npm run start"
