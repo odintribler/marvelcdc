@@ -1,5 +1,5 @@
 # Use specific Node.js version that satisfies Nuxt 4 requirements
-FROM node:22.12.0-alpine
+FROM node:22.12.0
 
 # Set working directory
 WORKDIR /app
