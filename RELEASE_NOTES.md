@@ -101,17 +101,18 @@ Detailed conflict reports show exactly which cards are over-allocated across you
 
 ## 🌍 **Deployment Options**
 
-### **Heroku (Recommended)**
-One-click deployment with our Heroku button:
+### **Railway (Recommended)**
+One-click deployment with our Railway button:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-id)
 
 ### **Self-Hosted**
 Deploy to any Node.js hosting platform:
 - DigitalOcean App Platform
 - AWS Elastic Beanstalk
 - Google Cloud Run
-- Railway
+- Vercel
+- Netlify
 - Render
 
 ## 🔄 **Migration & Updates**
@@ -175,7 +176,7 @@ Transform how you manage your Marvel Champions collection today!
 
 **[📥 Download Latest Release](https://github.com/your-username/marvel-champions-collection-manager/releases/latest)**
 
-**[🚀 Deploy to Heroku](https://heroku.com/deploy)**
+**[🚀 Deploy to Railway](https://railway.app/template/your-template-id)**
 
 **[📖 Read the Documentation](README.md)**
 

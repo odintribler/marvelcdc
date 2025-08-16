@@ -80,36 +80,51 @@ Visit `http://localhost:3000` to access the application.
 
 ## Production Deployment
 
-### Heroku Deployment
+### Railway Deployment (Recommended)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/your-template-id)
 
-1. **Manual deployment**:
+1. **One-click deployment**:
+   - Click the Railway button above
+   - Connect your GitHub repository
+   - Railway will automatically detect and deploy the Nuxt app
+   - Add a PostgreSQL database from the Railway dashboard
+
+2. **Manual deployment**:
    ```bash
-   # Login to Heroku
-   heroku login
+   # Install Railway CLI
+   npm install -g @railway/cli
    
-   # Create new app
-   heroku create your-app-name
+   # Login to Railway
+   railway login
    
-   # Add PostgreSQL addon
-   heroku addons:create heroku-postgresql:essential-0
+   # Initialize project
+   railway init
+   
+   # Add PostgreSQL database
+   railway add postgresql
    
    # Set environment variables
-   heroku config:set JWT_SECRET=$(openssl rand -base64 64)
-   heroku config:set NODE_ENV=production
+   railway variables set JWT_SECRET=$(openssl rand -base64 64)
+   railway variables set NODE_ENV=production
    
    # Deploy
-   git push heroku main
+   railway up
    
-   # Run database migrations and seed data
-   heroku run npm run db:migrate
-   heroku run npm run db:seed
+   # Run database migrations and seed data (via Railway dashboard or CLI)
+   railway run npm run db:migrate
+   railway run npm run db:seed
    ```
 
-### Other Platforms
+### Alternative Platforms
 
 The application can be deployed to any Node.js hosting platform:
+
+- **Vercel**: Connect GitHub repo and deploy automatically
+- **Netlify**: Full-stack deployment with Netlify Functions
+- **DigitalOcean App Platform**: Container-based deployment
+- **AWS Elastic Beanstalk**: Scalable AWS deployment
+- **Google Cloud Run**: Serverless container deployment
 
 1. **Build the application**:
    ```bash
