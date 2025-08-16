@@ -20,4 +20,4 @@ restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [environments.production.services.web.variables]
-NIXPACKS_NODE_VERSION = "18"
+NIXPACKS_NODE_VERSION = "22"

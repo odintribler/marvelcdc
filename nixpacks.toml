@@ -1,5 +1,5 @@
 [variables]
-NODE_VERSION = "18"
+NODE_VERSION = "22"
 
 [phases.build]
 cmds = ["npm ci", "npx prisma generate", "npm run build"]
