@@ -3,7 +3,7 @@
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <div class="text-center">
         <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-          Marvel Champions Collection Manager
+          Marvel Champions Deck Collection
         </h2>
         <p class="mt-2 text-sm text-gray-600">
           Sign in to your account

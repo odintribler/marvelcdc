@@ -32,10 +32,13 @@
             </svg>
           </button>
           
-          <!-- App title -->
-          <h1 class="ml-4 text-xl font-bold text-gray-900">
-            Marvel Champions Collection Manager
-          </h1>
+          <!-- App title - clickable to go to dashboard -->
+          <NuxtLink
+            to="/"
+            class="ml-4 text-xl font-bold text-gray-900 hover:text-red-600 transition-colors duration-200"
+          >
+            Marvel Champions Deck Collection
+          </NuxtLink>
         </div>
 
         <!-- User profile section -->

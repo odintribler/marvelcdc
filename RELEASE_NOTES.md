@@ -1,8 +1,8 @@
-# Release Notes - Marvel Champions Collection Manager v1.0.0
+# Release Notes - Marvel Champions Deck Collection v1.0.0
 
 ## 🎉 Welcome to the Production Release!
 
-We're excited to announce the first stable release of the **Marvel Champions Collection Manager** - your ultimate tool for managing your Marvel Champions LCG card collection and tracking deck conflicts in real-time.
+We're excited to announce the first stable release of **Marvel Champions Deck Collection** - your ultimate tool for managing your Marvel Champions LCG deck collection and tracking conflicts in real-time.
 
 ## 🚀 **What's New in v1.0.0**
 
@@ -182,4 +182,4 @@ Transform how you manage your Marvel Champions collection today!
 
 ---
 
-*Marvel Champions Collection Manager v1.0.0 - Built with ❤️ for the Marvel Champions community*
+*Marvel Champions Deck Collection v1.0.0 - Built with ❤️ for the Marvel Champions community*

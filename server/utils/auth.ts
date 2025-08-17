@@ -1,4 +1,5 @@
 import { hash, verify } from '@node-rs/argon2'
+import { randomBytes } from 'crypto'
 import prisma from './db'
 import type { H3Event } from 'h3'
 
@@ -43,8 +44,7 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
 // Session utilities
 export function generateSessionId(): string {
   // Generate a cryptographically secure random session ID
-  const crypto = require('crypto')
-  return crypto.randomBytes(32).toString('hex')
+  return randomBytes(32).toString('hex')
 }
 
 export async function createSession(userId: number): Promise<Session> {

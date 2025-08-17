@@ -26,7 +26,7 @@ This is a **Nuxt 3 full-stack application** for Marvel Champions LCG collection 
 ### Tech Stack
 - **Frontend**: Nuxt 3 + Vue 3 + TypeScript + Tailwind CSS
 - **Backend**: Nuxt server API routes with JWT authentication
-- **Database**: Prisma ORM with PostgreSQL (Railway) / SQLite (local development)
+- **Database**: Prisma ORM with PostgreSQL (both local and Railway production)
 - **State**: Pinia stores for client-side state management
 
 ### Data Flow Architecture
@@ -188,7 +188,7 @@ npx prisma studio
 - **Solution**: Switched from `node:22.12.0-alpine` to `node:22.12.0` for OpenSSL support
 
 - **Issue**: SQLite migrations incompatible with PostgreSQL production database
-- **Solution**: Deleted old SQLite migrations, created fresh PostgreSQL migrations manually
+- **Solution**: Migrated to PostgreSQL for both local and production environments
 
 - **Issue**: Failed migration state in production database
 - **Solution**: Used `railway run npx prisma migrate reset --force` to clean and reapply
@@ -196,25 +196,40 @@ npx prisma studio
 ## Database Environment
 
 **Production (Railway)**: PostgreSQL database with automated migrations
-**Local Development**: SQLite (`prisma/dev.db`) for offline development
+**Local Development**: PostgreSQL via Docker container for environment consistency
 
 ### Environment Variables:
-- `DATABASE_URL`: Database connection string (PostgreSQL on Railway, SQLite locally)
+- `DATABASE_URL`: PostgreSQL connection string (Railway production or local Docker container)
 - `JWT_SECRET`: JWT signing secret
 
+### Local PostgreSQL Setup:
+```bash
+# Start local PostgreSQL container
+docker run --name marvelcdc-postgres \
+  -e POSTGRES_DB=marvelcdc_dev \
+  -e POSTGRES_USER=marvelcdc \
+  -e POSTGRES_PASSWORD=marvelcdc123 \
+  -p 5432:5432 \
+  -d postgres:14
+
+# Apply migrations and seed data
+npx prisma migrate deploy
+npm run sync:marvelcdb
+```
+
 ### Database Deployment Process:
-1. **Schema**: Uses hardcoded `provider = "postgresql"` for Railway compatibility
+1. **Schema**: Uses hardcoded `provider = "postgresql"` for consistency
 2. **Migrations**: PostgreSQL-specific migrations in `prisma/migrations/`
-3. **Deployment**: Railway runs standard Node.js image (not Alpine) for Prisma compatibility
-4. **Migration Commands**:
+3. **Local**: Docker PostgreSQL container for development
+4. **Production**: Railway PostgreSQL with standard Node.js image
+5. **Migration Commands**:
    ```bash
-   # Reset and apply migrations on Railway
-   railway run npx prisma migrate reset --force
+   # Local development
+   npx prisma migrate deploy
+   npm run sync:marvelcdb
    
-   # Apply migrations only
+   # Railway production
    railway run npx prisma migrate deploy
-   
-   # Seed database with MarvelCDB data
    railway run npm run sync:marvelcdb
    ```
 
@@ -235,7 +250,7 @@ The application is **production-ready** with comprehensive MarvelCDB integration
 ### Maintenance
 - **Database Sync**: Run `npm run sync:marvelcdb` periodically when new packs are released
 - **Image Cache**: Hero thumbnails are served directly from MarvelCDB CDN
-- **Performance**: Local SQLite database ensures fast queries and offline capability
+- **Performance**: Local PostgreSQL ensures production environment consistency
 
 ### Deployment Readiness
 - **Railway Platform**: Deployed with PostgreSQL database and Node.js 22.12.0
