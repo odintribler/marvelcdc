@@ -26,7 +26,7 @@ This is a **Nuxt 3 full-stack application** for Marvel Champions LCG collection 
 ### Tech Stack
 - **Frontend**: Nuxt 3 + Vue 3 + TypeScript + Tailwind CSS
 - **Backend**: Nuxt server API routes with JWT authentication
-- **Database**: Prisma ORM with SQLite (configured for PostgreSQL)
+- **Database**: Prisma ORM with PostgreSQL (Railway) / SQLite (local development)
 - **State**: Pinia stores for client-side state management
 
 ### Data Flow Architecture
@@ -180,11 +180,43 @@ npx prisma studio
 - **Issue**: Cards with multi-line titles affected the height of other cards in the same row
 - **Solution**: Added `items-start` to grid container to prevent height synchronization
 
+### ✅ FIXED: Railway Deployment Issues (January 2025)
+- **Issue**: Node.js version compatibility - Railway used v22.11.0 but app required >=22.12.0
+- **Solution**: Created Dockerfile with `FROM node:22.12.0` (standard, not Alpine)
+
+- **Issue**: Prisma engine compatibility with Alpine Linux - OpenSSL library missing
+- **Solution**: Switched from `node:22.12.0-alpine` to `node:22.12.0` for OpenSSL support
+
+- **Issue**: SQLite migrations incompatible with PostgreSQL production database
+- **Solution**: Deleted old SQLite migrations, created fresh PostgreSQL migrations manually
+
+- **Issue**: Failed migration state in production database
+- **Solution**: Used `railway run npx prisma migrate reset --force` to clean and reapply
+
 ## Database Environment
 
-Currently using SQLite (`prisma/dev.db`) but schema is PostgreSQL-ready. Environment variables:
-- `DATABASE_URL`: Database connection string  
+**Production (Railway)**: PostgreSQL database with automated migrations
+**Local Development**: SQLite (`prisma/dev.db`) for offline development
+
+### Environment Variables:
+- `DATABASE_URL`: Database connection string (PostgreSQL on Railway, SQLite locally)
 - `JWT_SECRET`: JWT signing secret
+
+### Database Deployment Process:
+1. **Schema**: Uses hardcoded `provider = "postgresql"` for Railway compatibility
+2. **Migrations**: PostgreSQL-specific migrations in `prisma/migrations/`
+3. **Deployment**: Railway runs standard Node.js image (not Alpine) for Prisma compatibility
+4. **Migration Commands**:
+   ```bash
+   # Reset and apply migrations on Railway
+   railway run npx prisma migrate reset --force
+   
+   # Apply migrations only
+   railway run npx prisma migrate deploy
+   
+   # Seed database with MarvelCDB data
+   railway run npm run sync:marvelcdb
+   ```
 
 ## Production Notes
 
@@ -206,7 +238,9 @@ The application is **production-ready** with comprehensive MarvelCDB integration
 - **Performance**: Local SQLite database ensures fast queries and offline capability
 
 ### Deployment Readiness
-- Environment variables configured for production
-- PostgreSQL-compatible schema for scalable hosting
-- Static asset optimization via Nuxt build process
-- Security measures: JWT tokens, external link safety, input validation
+- **Railway Platform**: Deployed with PostgreSQL database and Node.js 22.12.0
+- **Docker Configuration**: Standard Node.js image for Prisma OpenSSL compatibility  
+- **Database Migrations**: PostgreSQL-specific migrations successfully applied
+- **Environment Variables**: DATABASE_URL (Railway PostgreSQL), JWT_SECRET, NODE_ENV
+- **Static Asset Optimization**: Nuxt build process optimized for production
+- **Security Measures**: JWT tokens, external link safety, input validation
