@@ -82,6 +82,12 @@ async function calculateConflicts(userId: number) {
     }
   })
 
+  // Create a map to get card info (faction, type) for each conflict
+  const cardInfoMap = new Map<string, { faction: string | null, type: string | null }>()
+  for (const card of cards) {
+    cardInfoMap.set(card.name, { faction: card.faction, type: card.cardType })
+  }
+
   // Check for conflicts using real card ownership - aggregate across all packs with same card name
   const conflicts = []
   for (const [cardName, usage] of cardUsage.entries()) {
@@ -113,9 +119,12 @@ async function calculateConflicts(userId: number) {
 
     // Calculate conflict
     if (usage.totalNeeded > totalOwnedCards) {
+      const cardInfo = cardInfoMap.get(cardName)
       conflicts.push({
         cardCodes: usage.cardCodes,
         cardName: cardName,
+        faction: cardInfo?.faction || null,
+        cardType: cardInfo?.type || null,
         totalNeeded: usage.totalNeeded,
         totalOwned: totalOwnedCards,
         conflictQuantity: usage.totalNeeded - totalOwnedCards,

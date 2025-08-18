@@ -78,12 +78,11 @@ export function sortCardsByFaction(cards: DeckCard[], heroCode: string): SortedC
         cardsByType[cardType].sort((a, b) => a.cardName.localeCompare(b.cardName))
       })
       
-      // Define card type order
-      const cardTypeOrder = ['hero', 'ally', 'support', 'upgrade', 'event', 'resource', 'unknown']
-      
-      // Create card type groups
+      // Create card type groups in alphabetical order
       const cardTypeGroups: CardTypeGroup[] = []
-      cardTypeOrder.forEach(cardType => {
+      const sortedCardTypes = Object.keys(cardsByType).sort()
+      
+      sortedCardTypes.forEach(cardType => {
         if (cardsByType[cardType] && cardsByType[cardType].length > 0) {
           cardTypeGroups.push({
             title: getCardTypeDisplayName(cardType),
@@ -145,4 +144,69 @@ export function getFactionColorClasses(faction: string | null): string {
   
   if (!faction) return colorClasses.hero
   return colorClasses[faction] || colorClasses.basic
+}
+
+// Sort conflicts by faction and card type for organized display
+export function sortConflictsByFaction(conflicts: any[]): SortedCardGroup[] {
+  // Group conflicts by faction
+  const groupedConflicts: { [key: string]: any[] } = {}
+  
+  conflicts.forEach(conflict => {
+    const faction = conflict.faction || 'basic'
+    const factionKey = faction === null ? 'hero' : faction
+    
+    if (!groupedConflicts[factionKey]) {
+      groupedConflicts[factionKey] = []
+    }
+    groupedConflicts[factionKey].push(conflict)
+  })
+
+  // Create sorted groups array with card type sub-grouping
+  const sortedGroups: SortedCardGroup[] = []
+  
+  // Add groups in the specified order
+  const orderedFactions = ['hero', 'aggression', 'justice', 'leadership', 'protection', 'basic']
+  
+  orderedFactions.forEach(faction => {
+    if (groupedConflicts[faction] && groupedConflicts[faction].length > 0) {
+      // Group conflicts by type within this faction
+      const conflictsByType: { [key: string]: any[] } = {}
+      
+      groupedConflicts[faction].forEach(conflict => {
+        const cardType = conflict.cardType || 'unknown'
+        if (!conflictsByType[cardType]) {
+          conflictsByType[cardType] = []
+        }
+        conflictsByType[cardType].push(conflict)
+      })
+      
+      // Sort conflicts within each type by name
+      Object.keys(conflictsByType).forEach(cardType => {
+        conflictsByType[cardType].sort((a, b) => a.cardName.localeCompare(b.cardName))
+      })
+      
+      // Create card type groups in alphabetical order
+      const cardTypeGroups: CardTypeGroup[] = []
+      const sortedCardTypes = Object.keys(conflictsByType).sort()
+      
+      sortedCardTypes.forEach(cardType => {
+        if (conflictsByType[cardType] && conflictsByType[cardType].length > 0) {
+          cardTypeGroups.push({
+            title: getCardTypeDisplayName(cardType),
+            cards: conflictsByType[cardType],
+            cardType: cardType === 'unknown' ? null : cardType
+          })
+        }
+      })
+      
+      sortedGroups.push({
+        title: getFactionDisplayName(faction),
+        cards: groupedConflicts[faction], // Keep all conflicts for backwards compatibility
+        faction: faction === 'hero' ? null : faction,
+        cardTypeGroups
+      })
+    }
+  })
+
+  return sortedGroups
 }
