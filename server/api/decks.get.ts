@@ -34,7 +34,8 @@ export default defineEventHandler(async (event) => {
             cardName: card.cardName,
             quantity: card.quantity,
             cardType: card.cardType,
-            packCode: card.packCode
+            packCode: card.packCode,
+            faction: card.faction
           }))
         }))
       }

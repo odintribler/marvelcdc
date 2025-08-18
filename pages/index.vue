@@ -271,31 +271,48 @@
                     </svg>
                     Deck Cards ({{ getTotalCards(deck) }})
                   </h5>
-                  <div class="space-y-2 max-h-64 overflow-y-auto">
-                    <div
-                      v-for="card in deck.deckCards"
-                      :key="card.id"
-                      class="flex justify-between items-center py-2 px-3 rounded-md transition-colors"
-                      :class="getCardConflictClass(card)"
-                    >
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center">
-                          <span class="font-medium text-gray-900 text-sm truncate">{{ card.cardName }}</span>
-                          <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
-                            ×{{ card.quantity }}
-                          </span>
-                        </div>
-                        <div v-if="card.cardType" class="text-xs text-gray-500 capitalize mt-1">
-                          {{ card.cardType }}
-                        </div>
+                  <div class="max-h-64 overflow-y-auto space-y-3">
+                    <!-- Cards grouped by faction -->
+                    <div v-for="group in getSortedCardGroups(deck)" :key="group.title" class="border rounded-md overflow-hidden" :class="getFactionColorClasses(group.faction)">
+                      <div class="px-3 py-2 border-b" :class="getFactionColorClasses(group.faction)">
+                        <h6 class="text-xs font-semibold uppercase tracking-wider flex items-center">
+                          <span 
+                            class="w-2 h-2 rounded-full mr-2"
+                            :class="getFactionDotClass(group.faction)"
+                          ></span>
+                          {{ group.title }} ({{ group.cards.length }})
+                        </h6>
                       </div>
-                      <div v-if="getCardConflict(card)" class="flex items-center ml-2 flex-shrink-0">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                          </svg>
-                          !
-                        </span>
+                      <div class="bg-white">
+                        <!-- Card type groups within faction -->
+                        <div v-for="typeGroup in group.cardTypeGroups" :key="typeGroup.title" class="border-t first:border-t-0 border-gray-100">
+                          <div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
+                            <h6 class="text-xs font-medium text-gray-700 uppercase tracking-wider">
+                              {{ typeGroup.title }} ({{ typeGroup.cards.length }})
+                            </h6>
+                          </div>
+                          <div
+                            v-for="card in typeGroup.cards"
+                            :key="card.id"
+                            class="flex items-center justify-between px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                          >
+                            <div class="flex items-center space-x-2 flex-1 min-w-0">
+                              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
+                                ×{{ card.quantity }}
+                              </span>
+                              <span class="font-medium text-gray-900 text-sm">{{ card.cardName }}</span>
+                            </div>
+                            <div v-if="getCardConflict(card)" class="flex items-center ml-2 flex-shrink-0">
+                              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                <span class="hidden sm:inline">{{ getCardConflict(card) }}</span>
+                                <span class="sm:hidden">Need {{ getCardConflictQuantity(card) }}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -480,29 +497,47 @@
                           </svg>
                           Deck Cards ({{ getTotalCards(deck) }})
                         </h5>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-                          <div
-                            v-for="card in deck.deckCards"
-                            :key="card.id"
-                            class="flex justify-between items-center py-2 px-3 rounded-md transition-colors"
-                            :class="getCardConflictClass(card)"
-                          >
-                            <div class="flex items-center">
-                              <span class="font-medium text-gray-900 text-sm">{{ card.cardName }}</span>
-                              <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                                ×{{ card.quantity }}
-                              </span>
-                              <span v-if="card.cardType" class="ml-2 text-xs text-gray-500 capitalize">
-                                {{ card.cardType }}
-                              </span>
+                        <div class="max-h-64 overflow-y-auto space-y-3">
+                          <!-- Cards grouped by faction -->
+                          <div v-for="group in getSortedCardGroups(deck)" :key="group.title" class="border rounded-md overflow-hidden" :class="getFactionColorClasses(group.faction)">
+                            <div class="px-3 py-2 border-b" :class="getFactionColorClasses(group.faction)">
+                              <h6 class="text-xs font-semibold uppercase tracking-wider flex items-center">
+                                <span 
+                                  class="w-2 h-2 rounded-full mr-2"
+                                  :class="getFactionDotClass(group.faction)"
+                                ></span>
+                                {{ group.title }} ({{ group.cards.length }})
+                              </h6>
                             </div>
-                            <div v-if="getCardConflict(card)" class="flex items-center">
-                              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                {{ getCardConflict(card) }}
-                              </span>
+                            <div class="bg-white">
+                              <!-- Card type groups within faction -->
+                              <div v-for="typeGroup in group.cardTypeGroups" :key="typeGroup.title" class="border-t first:border-t-0 border-gray-100">
+                                <div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
+                                  <h6 class="text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    {{ typeGroup.title }} ({{ typeGroup.cards.length }})
+                                  </h6>
+                                </div>
+                                <div
+                                  v-for="card in typeGroup.cards"
+                                  :key="card.id"
+                                  class="flex items-center justify-between px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                                >
+                                  <div class="flex items-center space-x-2 flex-1 min-w-0">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
+                                      ×{{ card.quantity }}
+                                    </span>
+                                    <span class="font-medium text-gray-900 text-sm">{{ card.cardName }}</span>
+                                  </div>
+                                  <div v-if="getCardConflict(card)" class="flex items-center ml-2 flex-shrink-0">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                      <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                      </svg>
+                                      {{ getCardConflict(card) }}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -598,6 +633,7 @@
 
 <script setup lang="ts">
 // Protected by global auth middleware
+import { sortCardsByFaction, getFactionColorClasses } from '~/utils/cardSorting'
 
 const decksStore = useDecksStore()
 const { user } = useSession()
@@ -705,6 +741,36 @@ const getCardConflict = (card: any) => {
 
 const getCardConflictClass = (card: any) => {
   return getCardConflict(card) ? 'bg-yellow-50 border border-yellow-200' : 'bg-white border border-gray-100'
+}
+
+// Card sorting helper
+const getSortedCardGroups = (deck: any) => {
+  if (!deck.deckCards || deck.deckCards.length === 0) {
+    return []
+  }
+  return sortCardsByFaction(deck.deckCards, deck.heroCode)
+}
+
+const getFactionDotClass = (faction: string | null) => {
+  const dotClasses: { [key: string]: string } = {
+    aggression: 'bg-red-500',
+    justice: 'bg-yellow-500',
+    leadership: 'bg-blue-500',
+    protection: 'bg-green-500',
+    basic: 'bg-gray-500',
+    hero: 'bg-purple-500'
+  }
+  
+  if (!faction) return dotClasses.hero
+  return dotClasses[faction] || dotClasses.basic
+}
+
+const getCardConflictQuantity = (card: any) => {
+  const conflicts = getConflictsForDeck(card.deckId)
+  const conflict = conflicts.find(c => 
+    c.cardCodes?.includes(card.cardCode) || c.cardName === card.cardName
+  )
+  return conflict ? conflict.conflictQuantity : 0
 }
 
 // Load data on mount
