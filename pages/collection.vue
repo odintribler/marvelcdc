@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">My Collection</h1>
+  <div class="px-4 sm:px-0">
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">My Collection</h1>
       <p class="mt-2 text-sm text-gray-600">
         Select which Marvel Champions packs you own to track card availability.
       </p>
@@ -13,18 +13,18 @@
         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
           Collection Summary
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="bg-blue-50 p-4 rounded-lg">
-            <div class="text-2xl font-bold text-blue-900">{{ totalPacks }}</div>
-            <div class="text-sm text-blue-600">Total Packs</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div class="bg-blue-50 p-3 sm:p-4 rounded-lg">
+            <div class="text-xl sm:text-2xl font-bold text-blue-900">{{ totalPacks }}</div>
+            <div class="text-xs sm:text-sm text-blue-600">Total Packs</div>
           </div>
-          <div class="bg-green-50 p-4 rounded-lg">
-            <div class="text-2xl font-bold text-green-900">{{ uniquePacksOwned }}</div>
-            <div class="text-sm text-green-600">Unique Packs Owned</div>
+          <div class="bg-green-50 p-3 sm:p-4 rounded-lg">
+            <div class="text-xl sm:text-2xl font-bold text-green-900">{{ uniquePacksOwned }}</div>
+            <div class="text-xs sm:text-sm text-green-600">Unique Packs Owned</div>
           </div>
-          <div class="bg-red-50 p-4 rounded-lg">
-            <div class="text-2xl font-bold text-red-900">{{ packsNotOwned }}</div>
-            <div class="text-sm text-red-600">Packs Not Owned</div>
+          <div class="bg-red-50 p-3 sm:p-4 rounded-lg">
+            <div class="text-xl sm:text-2xl font-bold text-red-900">{{ packsNotOwned }}</div>
+            <div class="text-xs sm:text-sm text-red-600">Packs Not Owned</div>
           </div>
         </div>
       </div>

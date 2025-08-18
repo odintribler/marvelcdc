@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="px-4 sm:px-0">
     <!-- Import deck section -->
-    <div class="bg-gradient-to-br from-red-50 to-red-100 shadow-sm sm:rounded-xl mb-8 border border-red-200">
+    <div class="bg-gradient-to-br from-red-50 to-red-100 shadow-sm sm:rounded-xl mb-6 sm:mb-8 border border-red-200">
       <div class="px-6 py-6 sm:p-8">
         <div class="flex items-start space-x-4 mb-6">
           <div class="flex-shrink-0">
@@ -78,10 +78,10 @@
 
     <!-- Deck collection grid -->
     <div>
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-900">My Decks</h2>
-          <div class="flex space-x-4 text-sm text-gray-600 mt-1">
+      <div class="flex justify-between items-start mb-6">
+        <div class="flex-1 min-w-0">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900">My Decks</h2>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
             <span>{{ activeDecks.length }} Active</span>
             <span>{{ inactiveDecks.length }} Inactive</span>
             <span v-if="hasConflicts" class="text-yellow-600">
@@ -91,36 +91,38 @@
         </div>
         
         <!-- Layout toggle -->
-        <div class="flex items-center space-x-2">
-          <span class="text-sm text-gray-500">View:</span>
+        <div class="flex items-center space-x-2 flex-shrink-0 ml-4">
+          <span class="text-sm text-gray-500 hidden sm:inline">View:</span>
           <div class="bg-gray-100 p-1 rounded-lg">
             <button
               @click="viewMode = 'cards'"
               :class="[
-                'px-3 py-1 text-sm font-medium rounded-md transition-colors',
+                'px-3 py-2 sm:px-3 sm:py-1 text-sm font-medium rounded-md transition-colors',
                 viewMode === 'cards' 
                   ? 'bg-white text-gray-900 shadow-sm' 
                   : 'text-gray-600 hover:text-gray-900'
               ]"
+              title="Card View"
             >
-              <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 sm:mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
-              Cards
+              <span class="hidden sm:inline">Cards</span>
             </button>
             <button
               @click="viewMode = 'table'"
               :class="[
-                'px-3 py-1 text-sm font-medium rounded-md transition-colors',
+                'px-3 py-2 sm:px-3 sm:py-1 text-sm font-medium rounded-md transition-colors',
                 viewMode === 'table' 
                   ? 'bg-white text-gray-900 shadow-sm' 
                   : 'text-gray-600 hover:text-gray-900'
               ]"
+              title="Table View"
             >
-              <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 sm:mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
-              Table
+              <span class="hidden sm:inline">Table</span>
             </button>
           </div>
         </div>
@@ -157,214 +159,394 @@
       </div>
 
       <!-- Table view -->
-      <div v-else class="bg-white shadow sm:rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Deck
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hero
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cards
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Conflicts
-              </th>
-              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <template v-for="deck in decks" :key="deck.id">
-              <tr 
-                class="hover:bg-gray-50 transition-colors cursor-pointer"
-                @click="toggleDeckExpansion(deck.id)"
-              >
-                <!-- Deck name with hero thumbnail -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <img 
-                      :src="`https://marvelcdb.com/bundles/cards/${deck.heroCode}.png`" 
-                      :alt="deck.heroName"
-                      class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm mr-3"
-                      @error="onImageError"
-                    />
-                    <div class="flex-1">
-                      <div class="flex items-center">
-                        <a 
-                          v-if="deck.deckUrl" 
-                          :href="deck.deckUrl" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          class="text-sm font-medium text-gray-900 hover:text-red-600 transition-colors"
-                          @click.stop
-                        >
-                          {{ deck.name }}
-                        </a>
-                        <div v-else class="text-sm font-medium text-gray-900">{{ deck.name }}</div>
-                        <svg 
-                          :class="[
-                            'ml-2 h-4 w-4 text-gray-400 transform transition-transform duration-200',
-                            expandedDeckIds.has(deck.id) ? 'rotate-180' : ''
-                          ]" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+      <div v-else>
+        <!-- Mobile: Card-style list -->
+        <div class="sm:hidden space-y-3">
+          <div
+            v-for="deck in decks"
+            :key="deck.id"
+            class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+          >
+            <!-- Mobile deck item -->
+            <div 
+              class="p-4 cursor-pointer"
+              @click="toggleDeckExpansion(deck.id)"
+            >
+              <div class="flex items-start space-x-3">
+                <!-- Hero thumbnail -->
+                <img 
+                  :src="`https://marvelcdb.com/bundles/cards/${deck.heroCode}.png`" 
+                  :alt="deck.heroName"
+                  class="w-12 h-12 rounded-lg object-cover border border-gray-200 shadow-sm flex-shrink-0"
+                  @error="onImageError"
+                />
+                
+                <!-- Deck info -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                      <a 
+                        v-if="deck.deckUrl" 
+                        :href="deck.deckUrl" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="text-sm font-medium text-gray-900 hover:text-red-600 transition-colors block truncate"
+                        @click.stop
+                      >
+                        {{ deck.name }}
+                      </a>
+                      <div v-else class="text-sm font-medium text-gray-900 truncate">{{ deck.name }}</div>
+                      <div class="text-xs text-gray-500 mt-1">
+                        {{ deck.heroName }} • {{ getTotalCards(deck) }} cards
                       </div>
-                      <div class="text-sm text-gray-500">{{ deck.heroName }}</div>
+                    </div>
+                    <svg 
+                      :class="[
+                        'h-5 w-5 text-gray-400 transform transition-transform duration-200 flex-shrink-0 ml-2',
+                        expandedDeckIds.has(deck.id) ? 'rotate-180' : ''
+                      ]" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  
+                  <!-- Status and actions row -->
+                  <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center space-x-2">
+                      <span 
+                        :class="[
+                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                          deck.isActive 
+                            ? (getConflictsForDeck(deck.id).length > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800')
+                            : 'bg-gray-100 text-gray-600'
+                        ]"
+                      >
+                        {{ getStatusText(deck) }}
+                      </span>
+                      <span v-if="getConflictsForDeck(deck.id).length > 0" class="text-xs text-yellow-600 font-medium">
+                        {{ getConflictsForDeck(deck.id).length }} conflict{{ getConflictsForDeck(deck.id).length !== 1 ? 's' : '' }}
+                      </span>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex items-center space-x-1">
+                      <button
+                        v-if="getConflictsForDeck(deck.id).length > 0"
+                        @click.stop="handleShowConflicts(deck.id)"
+                        class="p-2 text-yellow-600 hover:text-yellow-700 transition-colors"
+                        title="View Conflicts"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                      </button>
+                      <button
+                        @click.stop="handleToggleActive(deck.id, !deck.isActive)"
+                        :class="[
+                          'px-3 py-1 text-xs font-medium rounded transition-colors',
+                          deck.isActive 
+                            ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
+                            : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'
+                        ]"
+                      >
+                        {{ deck.isActive ? 'Deactivate' : 'Activate' }}
+                      </button>
                     </div>
                   </div>
-                </td>
-              
-              <!-- Hero -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                  {{ deck.heroName }}
-                </span>
-              </td>
-              
-              <!-- Card count -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ getTotalCards(deck) }} cards
-              </td>
-              
-              <!-- Status -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-                    deck.isActive 
-                      ? (getConflictsForDeck(deck.id).length > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800')
-                      : 'bg-gray-100 text-gray-600'
-                  ]"
-                >
-                  {{ getStatusText(deck) }}
-                </span>
-              </td>
-              
-              <!-- Conflicts -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span v-if="getConflictsForDeck(deck.id).length > 0" class="text-yellow-600 font-medium">
-                  {{ getConflictsForDeck(deck.id).length }} conflict{{ getConflictsForDeck(deck.id).length !== 1 ? 's' : '' }}
-                </span>
-                <span v-else class="text-gray-400">None</span>
-              </td>
-              
-              <!-- Actions -->
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end space-x-2">
-                  <button
-                    v-if="getConflictsForDeck(deck.id).length > 0"
-                    @click.stop="handleShowConflicts(deck.id)"
-                    class="text-yellow-600 hover:text-yellow-700 transition-colors"
-                    title="View Conflicts"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </button>
-                  <button
-                    @click.stop="handleToggleActive(deck.id, !deck.isActive)"
-                    :class="[
-                      'px-3 py-1 text-xs font-medium rounded transition-colors',
-                      deck.isActive 
-                        ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
-                        : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'
-                    ]"
-                  >
-                    {{ deck.isActive ? 'Deactivate' : 'Activate' }}
-                  </button>
                 </div>
-              </td>
-            </tr>
+              </div>
+            </div>
             
-            <!-- Expanded deck details row -->
-            <tr v-if="expandedDeckIds.has(deck.id)" class="bg-gray-50">
-              <td colspan="6" class="px-6 py-4">
-                <div class="space-y-4">
-                  <!-- Deck Cards Section -->
-                  <div>
-                    <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                      <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                      Deck Cards ({{ getTotalCards(deck) }})
-                    </h5>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-                      <div
-                        v-for="card in deck.deckCards"
-                        :key="card.id"
-                        class="flex justify-between items-center py-2 px-3 rounded-md transition-colors"
-                        :class="getCardConflictClass(card)"
-                      >
+            <!-- Expanded deck details for mobile -->
+            <div v-if="expandedDeckIds.has(deck.id)" class="border-t border-gray-200 bg-gray-50 p-4">
+              <div class="space-y-4">
+                <!-- Deck Cards Section -->
+                <div>
+                  <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    Deck Cards ({{ getTotalCards(deck) }})
+                  </h5>
+                  <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <div
+                      v-for="card in deck.deckCards"
+                      :key="card.id"
+                      class="flex justify-between items-center py-2 px-3 rounded-md transition-colors"
+                      :class="getCardConflictClass(card)"
+                    >
+                      <div class="flex-1 min-w-0">
                         <div class="flex items-center">
-                          <span class="font-medium text-gray-900 text-sm">{{ card.cardName }}</span>
-                          <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                          <span class="font-medium text-gray-900 text-sm truncate">{{ card.cardName }}</span>
+                          <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
                             ×{{ card.quantity }}
                           </span>
-                          <span v-if="card.cardType" class="ml-2 text-xs text-gray-500 capitalize">
-                            {{ card.cardType }}
-                          </span>
                         </div>
-                        <div v-if="getCardConflict(card)" class="flex items-center">
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                            {{ getCardConflict(card) }}
-                          </span>
+                        <div v-if="card.cardType" class="text-xs text-gray-500 capitalize mt-1">
+                          {{ card.cardType }}
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <!-- Conflicts Section (if any) -->
-                  <div v-if="getConflictsForDeck(deck.id).length > 0" class="border-t border-gray-200 pt-4">
-                    <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                      <svg class="w-4 h-4 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
-                      Card Conflicts ({{ getConflictsForDeck(deck.id).length }})
-                    </h5>
-                    <div class="space-y-2">
-                      <div v-for="conflict in getConflictsForDeck(deck.id)" :key="conflict.cardCode" class="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                        <div class="flex justify-between items-start">
-                          <div>
-                            <h6 class="font-medium text-gray-900 text-sm">{{ conflict.cardName }}</h6>
-                            <p class="text-sm text-gray-600">
-                              Need {{ conflict.totalNeeded }}, Own {{ conflict.totalOwned }}, 
-                              Missing {{ conflict.conflictQuantity }}
-                            </p>
-                          </div>
-                        </div>
-                        <div v-if="conflict.conflictingDecks?.length" class="mt-2">
-                          <p class="text-sm text-gray-600">Used in:</p>
-                          <ul class="text-sm text-gray-800 mt-1">
-                            <li v-for="deckName in conflict.conflictingDecks" :key="deckName" class="flex items-center">
-                              <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span>
-                              {{ deckName }}
-                            </li>
-                          </ul>
-                        </div>
+                      <div v-if="getCardConflict(card)" class="flex items-center ml-2 flex-shrink-0">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                          !
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </td>
-            </tr>
-            </template>
-          </tbody>
-        </table>
+
+                <!-- Conflicts Section (if any) -->
+                <div v-if="getConflictsForDeck(deck.id).length > 0" class="border-t border-gray-200 pt-4">
+                  <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    Card Conflicts ({{ getConflictsForDeck(deck.id).length }})
+                  </h5>
+                  <div class="space-y-2">
+                    <div v-for="conflict in getConflictsForDeck(deck.id)" :key="conflict.cardCode" class="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <div>
+                        <h6 class="font-medium text-gray-900 text-sm">{{ conflict.cardName }}</h6>
+                        <p class="text-sm text-gray-600 mt-1">
+                          Need {{ conflict.totalNeeded }}, Own {{ conflict.totalOwned }}, 
+                          Missing {{ conflict.conflictQuantity }}
+                        </p>
+                      </div>
+                      <div v-if="conflict.conflictingDecks?.length" class="mt-2">
+                        <p class="text-sm text-gray-600">Used in:</p>
+                        <ul class="text-sm text-gray-800 mt-1">
+                          <li v-for="deckName in conflict.conflictingDecks" :key="deckName" class="flex items-center">
+                            <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span>
+                            {{ deckName }}
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop: Traditional table -->
+        <div class="hidden sm:block bg-white shadow sm:rounded-lg overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Deck
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    Hero
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Cards
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                    Conflicts
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <template v-for="deck in decks" :key="deck.id">
+                  <tr 
+                    class="hover:bg-gray-50 transition-colors cursor-pointer"
+                    @click="toggleDeckExpansion(deck.id)"
+                  >
+                    <!-- Deck name with hero thumbnail -->
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <img 
+                          :src="`https://marvelcdb.com/bundles/cards/${deck.heroCode}.png`" 
+                          :alt="deck.heroName"
+                          class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm mr-3 flex-shrink-0"
+                          @error="onImageError"
+                        />
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center">
+                            <a 
+                              v-if="deck.deckUrl" 
+                              :href="deck.deckUrl" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              class="text-sm font-medium text-gray-900 hover:text-red-600 transition-colors truncate"
+                              @click.stop
+                            >
+                              {{ deck.name }}
+                            </a>
+                            <div v-else class="text-sm font-medium text-gray-900 truncate">{{ deck.name }}</div>
+                            <svg 
+                              :class="[
+                                'ml-2 h-4 w-4 text-gray-400 transform transition-transform duration-200 flex-shrink-0',
+                                expandedDeckIds.has(deck.id) ? 'rotate-180' : ''
+                              ]" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                          <div class="text-sm text-gray-500">{{ deck.heroName }}</div>
+                        </div>
+                      </div>
+                    </td>
+                  
+                  <!-- Hero -->
+                  <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      {{ deck.heroName }}
+                    </span>
+                  </td>
+                  
+                  <!-- Card count -->
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                    {{ getTotalCards(deck) }} cards
+                  </td>
+                  
+                  <!-- Status -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span 
+                      :class="[
+                        'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
+                        deck.isActive 
+                          ? (getConflictsForDeck(deck.id).length > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800')
+                          : 'bg-gray-100 text-gray-600'
+                      ]"
+                    >
+                      {{ getStatusText(deck) }}
+                    </span>
+                  </td>
+                  
+                  <!-- Conflicts -->
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell">
+                    <span v-if="getConflictsForDeck(deck.id).length > 0" class="text-yellow-600 font-medium">
+                      {{ getConflictsForDeck(deck.id).length }} conflict{{ getConflictsForDeck(deck.id).length !== 1 ? 's' : '' }}
+                    </span>
+                    <span v-else class="text-gray-400">None</span>
+                  </td>
+                  
+                  <!-- Actions -->
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end space-x-2">
+                      <button
+                        v-if="getConflictsForDeck(deck.id).length > 0"
+                        @click.stop="handleShowConflicts(deck.id)"
+                        class="text-yellow-600 hover:text-yellow-700 transition-colors"
+                        title="View Conflicts"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                      </button>
+                      <button
+                        @click.stop="handleToggleActive(deck.id, !deck.isActive)"
+                        :class="[
+                          'px-3 py-1 text-xs font-medium rounded transition-colors',
+                          deck.isActive 
+                            ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
+                            : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'
+                        ]"
+                      >
+                        {{ deck.isActive ? 'Deactivate' : 'Activate' }}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                
+                <!-- Expanded deck details row -->
+                <tr v-if="expandedDeckIds.has(deck.id)" class="bg-gray-50">
+                  <td colspan="6" class="px-6 py-4">
+                    <div class="space-y-4">
+                      <!-- Deck Cards Section -->
+                      <div>
+                        <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                          <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                          Deck Cards ({{ getTotalCards(deck) }})
+                        </h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+                          <div
+                            v-for="card in deck.deckCards"
+                            :key="card.id"
+                            class="flex justify-between items-center py-2 px-3 rounded-md transition-colors"
+                            :class="getCardConflictClass(card)"
+                          >
+                            <div class="flex items-center">
+                              <span class="font-medium text-gray-900 text-sm">{{ card.cardName }}</span>
+                              <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                                ×{{ card.quantity }}
+                              </span>
+                              <span v-if="card.cardType" class="ml-2 text-xs text-gray-500 capitalize">
+                                {{ card.cardType }}
+                              </span>
+                            </div>
+                            <div v-if="getCardConflict(card)" class="flex items-center">
+                              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                {{ getCardConflict(card) }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Conflicts Section (if any) -->
+                      <div v-if="getConflictsForDeck(deck.id).length > 0" class="border-t border-gray-200 pt-4">
+                        <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
+                          <svg class="w-4 h-4 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                          Card Conflicts ({{ getConflictsForDeck(deck.id).length }})
+                        </h5>
+                        <div class="space-y-2">
+                          <div v-for="conflict in getConflictsForDeck(deck.id)" :key="conflict.cardCode" class="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                            <div class="flex justify-between items-start">
+                              <div>
+                                <h6 class="font-medium text-gray-900 text-sm">{{ conflict.cardName }}</h6>
+                                <p class="text-sm text-gray-600">
+                                  Need {{ conflict.totalNeeded }}, Own {{ conflict.totalOwned }}, 
+                                  Missing {{ conflict.conflictQuantity }}
+                                </p>
+                              </div>
+                            </div>
+                            <div v-if="conflict.conflictingDecks?.length" class="mt-2">
+                              <p class="text-sm text-gray-600">Used in:</p>
+                              <ul class="text-sm text-gray-800 mt-1">
+                                <li v-for="deckName in conflict.conflictingDecks" :key="deckName" class="flex items-center">
+                                  <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-2"></span>
+                                  {{ deckName }}
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 

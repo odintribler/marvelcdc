@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Card Conflicts</h1>
+  <div class="px-4 sm:px-0">
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Card Conflicts</h1>
       <p class="mt-2 text-sm text-gray-600">
         Resolve conflicts when multiple active decks need more copies of a card than you own.
       </p>
