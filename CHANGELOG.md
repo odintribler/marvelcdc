@@ -4,6 +4,74 @@ All notable changes to Marvel Champions Deck Collection will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - Develop Branch
+
+### ✨ **Enhanced User Experience**
+
+#### **Conflict Modal Improvements (v1.1)**
+- **Mobile-Optimized Layout**: Compact 2-line design for better mobile experience with inline deck names
+- **Desktop Grid System**: 12-column layout for consistent alignment across all conflict entries  
+- **Responsive Modal Design**: Full-height (90vh) modal reduces scrolling and maximizes screen usage
+- **Enhanced Visual Hierarchy**: Improved spacing, faction colors, and professional typography
+- **Template Bug Fix**: Resolved syntax error that prevented server startup
+
+#### **Advanced Card Display System (v1.1)**
+- **Faction-Based Organization**: Cards grouped by Marvel Champions factions with color-coded headers
+- **Card Type Sub-Sorting**: Alphabetical organization within factions (Events → Supports → Upgrades)
+- **Enhanced Readability**: Card quantities moved to front, full card names without truncation
+- **Structured Layout**: Bordered faction groups with card type headers showing counts
+- **Database Enhancement**: Added faction field to DeckCard model with proper migration
+
+#### **Comprehensive Mobile UX (v1.1)**
+- **Optimized Navigation**: Shortened app title "MarvelCDC" with smooth slide-in burger menu
+- **Enhanced Dashboard**: Larger view toggle buttons and mobile-optimized card layouts
+- **Touch-Friendly Controls**: Larger quantity controls and touch targets throughout app
+- **Mobile Table Replacement**: Card-style list layout replaces cramped mobile tables
+- **Responsive Typography**: Proper mobile spacing and typography improvements
+
+#### **Professional Site Elements (v1.1)**
+- **Site-Wide Footer**: Dark grey footer with clear visual distinction from body content
+- **Comprehensive About Page**: Detailed explanation of MarvelCDC purpose and features
+- **Creator Attribution**: Links to OrangeViking's MarvelCDB profile with proper acknowledgment
+- **Legal Compliance**: Fantasy Flight Games IP acknowledgment using official MarvelCDB wording
+- **Public Accessibility**: About page accessible without authentication for transparency
+
+#### **Collection Management Enhancements (v1.1)**
+- **Complete Pack Integration**: Full onboarding system with all pack categories including scenarios
+- **Visual Collection Summary**: Compact summary cards showing ownership statistics
+- **Optimized Pack Selection**: Enhanced pack table with better mobile controls
+
+### 🔧 **Technical Improvements**
+
+#### **API Enhancements**
+- **Fixed Card Type Mapping**: Corrected conflicts API to use `card.cardType` instead of deprecated `card.type`
+- **Improved Data Accuracy**: Enhanced conflict detection with proper card type information
+- **Alphabetical Sorting**: Card types now sorted alphabetically for consistent organization
+
+#### **Frontend Architecture**
+- **Enhanced Utilities**: New `cardSorting.ts` utilities for faction-based organization
+- **Responsive Components**: All components optimized for mobile-first design
+- **Performance Optimization**: Improved rendering with proper grid alignment and efficient layouts
+
+#### **Database Schema**
+- **Faction Support**: Added faction field to DeckCard model with migration
+- **Data Migration Scripts**: Automated faction data population for existing records
+
+### 🐛 **Bug Fixes**
+- **Template Syntax Error**: Fixed Vue template syntax preventing server startup
+- **Card Type Display**: Resolved "Other" showing for all cards in conflict modal
+- **Mobile Layout Issues**: Fixed grid height problems with multi-line card titles
+- **Navigation Bugs**: Removed broken import links and improved menu functionality
+
+### 📱 **Mobile Experience Highlights**
+- **Conflict Modal**: Compact stacked layout with inline deck information
+- **Dashboard Views**: Optimized card grids and improved table alternatives  
+- **Navigation**: Smooth animations and larger touch targets
+- **Collection Page**: Enhanced pack selection with mobile-friendly controls
+- **Overall UX**: Consistent mobile-first design language throughout application
+
+---
+
 ## [1.0.0] - 2025-01-16
 
 ### 🎉 **Initial Production Release**
