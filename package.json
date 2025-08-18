@@ -1,7 +1,7 @@
 {
-  "name": "marvel-champions-collection-manager",
+  "name": "marvelcdc",
   "version": "1.0.0",
-  "description": "A full-stack application for managing Marvel Champions LCG card collection and deck conflicts",
+  "description": "Marvel Champions Deck Collection - A full-stack application for managing Marvel Champions LCG deck collection and conflicts",
   "type": "module",
   "private": true,
   "engines": {
@@ -20,7 +20,8 @@
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
     "db:seed": "npm run sync:marvelcdb",
-    "sync:marvelcdb": "tsx scripts/sync-marvelcdb-data.ts"
+    "sync:marvelcdb": "tsx scripts/sync-marvelcdb-data.ts",
+    "migrate:faction": "tsx scripts/migrate-faction-data.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.0",

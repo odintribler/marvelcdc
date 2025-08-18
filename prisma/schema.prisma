@@ -119,6 +119,7 @@ model DeckCard {
   quantity Int
   cardType String @map("card_type")
   packCode String @map("pack_code")
+  faction  String?  // e.g., "aggression", "protection", null for hero cards
 
   // Relations
   deck Deck @relation(fields: [deckId], references: [id], onDelete: Cascade)

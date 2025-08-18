@@ -1,6 +1,4 @@
 # Nuxt dev/build outputs
-.output
-.data
 .nuxt
 .nitro
 .cache
@@ -26,12 +24,6 @@ logs
 # Development and security files
 cookies.txt
 settings.local.json
-output-docs/
-
-# Database files
-*.db
-*.db-journal
-/prisma/dev.db*
 
 # IDE and editor files
 .vscode/

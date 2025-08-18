@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     jwtSecret: process.env.JWT_SECRET,
     databaseUrl: process.env.DATABASE_URL,
     public: {
-      appName: 'Marvel Champions Collection Manager'
+      appName: 'Marvel Champions Deck Collection'
     }
   },
   nitro: {

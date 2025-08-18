@@ -147,7 +147,8 @@ export default defineEventHandler(async (event) => {
             cardName: cardInfo.name,
             quantity: quantity as number,
             cardType: cardInfo.type,
-            packCode: cardInfo.pack_code
+            packCode: cardInfo.pack_code,
+            faction: cardInfo.faction
           }
         })
         deckCards.push(deckCard)
@@ -183,7 +184,8 @@ export default defineEventHandler(async (event) => {
             cardName: card.cardName,
             quantity: card.quantity,
             cardType: card.cardType,
-            packCode: card.packCode
+            packCode: card.packCode,
+            faction: card.faction
           }))
         },
         conflicts

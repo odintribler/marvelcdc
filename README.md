@@ -1,8 +1,8 @@
-# Marvel Champions Collection Manager
+# Marvel Champions Deck Collection
 
-A full-stack web application for managing your Marvel Champions LCG card collection and tracking deck conflicts in real-time.
+A full-stack web application for managing your Marvel Champions LCG deck collection and tracking conflicts in real-time. Built to work seamlessly with MarvelCDB data.
 
-![Marvel Champions Collection Manager](https://marvelcdb.com/bundles/cards/01001.png)
+![Marvel Champions Deck Collection](https://marvelcdb.com/bundles/cards/01001.png)
 
 ## Features
 
@@ -19,7 +19,7 @@ A full-stack web application for managing your Marvel Champions LCG card collect
 
 - **Frontend**: Nuxt 3 + Vue 3 + TypeScript + Tailwind CSS
 - **Backend**: Nuxt server API routes with session-based authentication
-- **Database**: Prisma ORM with PostgreSQL (SQLite for development)
+- **Database**: Prisma ORM with PostgreSQL (Docker container for local development)
 - **State Management**: Pinia stores
 - **Authentication**: Argon2 password hashing with HTTP-only cookies
 - **External API**: MarvelCDB integration for deck and card data
@@ -28,15 +28,16 @@ A full-stack web application for managing your Marvel Champions LCG card collect
 
 ### Prerequisites
 
-- Node.js 18+ and npm 8+
-- PostgreSQL (for production) or SQLite (for development)
+- Node.js 22.12.0+ and npm 8+
+- Docker (for local PostgreSQL database)
+- Git
 
-### Installation
+### Local Development Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/marvel-champions-collection-manager.git
-   cd marvel-champions-collection-manager
+   git clone https://github.com/your-username/marvelcdc.git
+   cd marvelcdc
    ```
 
 2. **Install dependencies**
@@ -44,29 +45,98 @@ A full-stack web application for managing your Marvel Champions LCG card collect
    npm install
    ```
 
-3. **Set up environment variables**
+3. **Start PostgreSQL database (Docker)**
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   docker run --name marvelcdc-postgres \
+     -e POSTGRES_DB=marvelcdc_dev \
+     -e POSTGRES_USER=marvelcdc \
+     -e POSTGRES_PASSWORD=marvelcdc123 \
+     -p 5432:5432 \
+     -d postgres:14
    ```
 
-4. **Initialize database**
+4. **Set up environment variables**
+   
+   The `.env` file should contain:
    ```bash
-   npx prisma migrate dev
+   DATABASE_URL="postgresql://marvelcdc:marvelcdc123@localhost:5432/marvelcdc_dev"
+   JWT_SECRET="your-jwt-secret-here-64-characters-minimum-for-security"
+   ```
+
+5. **Generate Prisma client and run migrations**
+   ```bash
    npx prisma generate
+   npx prisma migrate deploy
    ```
 
-5. **Sync MarvelCDB data**
+6. **Seed database with MarvelCDB data**
    ```bash
    npm run sync:marvelcdb
    ```
 
-6. **Start development server**
+7. **Start development server**
    ```bash
    npm run dev
    ```
 
 Visit `http://localhost:3000` to access the application.
+
+### Quick Start Summary
+
+If you already have the container running from a previous setup:
+
+```bash
+# Start existing PostgreSQL container
+docker start marvelcdc-postgres
+
+# Generate Prisma client (if needed)
+npx prisma generate
+
+# Start development server
+npm run dev
+```
+
+### Managing Local Database
+
+```bash
+# Stop PostgreSQL container
+docker stop marvelcdc-postgres
+
+# Start existing container
+docker start marvelcdc-postgres
+
+# Remove container (warning: deletes all data)
+docker rm marvelcdc-postgres
+
+# View container logs
+docker logs marvelcdc-postgres
+
+# Connect to PostgreSQL shell
+docker exec -it marvelcdc-postgres psql -U marvelcdc -d marvelcdc_dev
+```
+
+### Troubleshooting
+
+**Database connection issues:**
+```bash
+# Check if PostgreSQL container is running
+docker ps | grep marvelcdc-postgres
+
+# Check container logs for errors
+docker logs marvelcdc-postgres
+
+# Restart the container
+docker restart marvelcdc-postgres
+```
+
+**Port conflicts (5432 already in use):**
+```bash
+# Check what's using port 5432
+lsof -i :5432
+
+# Use different port (update DATABASE_URL accordingly)
+docker run --name marvelcdc-postgres -p 5433:5432 ...
+```
 
 ## Environment Variables
 
@@ -179,11 +249,19 @@ npx prisma studio
 
 ### Key Commands
 ```bash
+# Development
 npm run dev              # Start development server
-npm run build           # Build for production
-npm run preview         # Preview production build
-npm run sync:marvelcdb  # Sync MarvelCDB data
-npx prisma studio       # Database GUI
+npm run sync:marvelcdb   # Sync MarvelCDB data
+
+# Database
+npx prisma generate      # Generate Prisma client
+npx prisma migrate deploy # Apply database migrations
+npx prisma studio        # Database GUI
+
+# Production
+npm run build            # Build for production
+npm run preview          # Preview production build
+npm start                # Start production server
 ```
 
 ## Security Features

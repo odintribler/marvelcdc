@@ -74,8 +74,10 @@ export const useCollectionStore = defineStore('collection', {
       }
     },
 
-    async updateCollection(updates: { packCode: string; quantity: number }[]) {
-      this.isLoading = true
+    async updateCollection(updates: { packCode: string; quantity: number }[], silent: boolean = false) {
+      if (!silent) {
+        this.isLoading = true
+      }
       this.error = null
 
       try {
@@ -90,7 +92,9 @@ export const useCollectionStore = defineStore('collection', {
         this.error = error.data?.message || 'Failed to update collection'
         return { success: false, error: this.error }
       } finally {
-        this.isLoading = false
+        if (!silent) {
+          this.isLoading = false
+        }
       }
     },
 
