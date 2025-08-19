@@ -50,6 +50,14 @@
 
           <div v-if="error" class="text-red-600 text-sm">
             {{ error }}
+            <div v-if="showResendVerification" class="mt-2">
+              <NuxtLink 
+                to="/register" 
+                class="text-sm font-medium text-red-600 hover:text-red-500"
+              >
+                Resend verification email
+              </NuxtLink>
+            </div>
           </div>
 
           <div>
@@ -69,7 +77,12 @@
             </button>
           </div>
 
-          <div class="text-center">
+          <div class="text-center space-y-2">
+            <p class="text-sm text-gray-600">
+              <NuxtLink to="/forgot-password" class="font-medium text-red-600 hover:text-red-500">
+                Forgot your password?
+              </NuxtLink>
+            </p>
             <p class="text-sm text-gray-600">
               Don't have an account?
               <NuxtLink to="/register" class="font-medium text-red-600 hover:text-red-500">
@@ -97,12 +110,14 @@ const form = reactive({
 
 const isLoading = ref(false)
 const error = ref('')
+const showResendVerification = ref(false)
 
 const handleLogin = async () => {
   if (isLoading.value) return
   
   isLoading.value = true
   error.value = ''
+  showResendVerification.value = false
 
   try {
     const result = await login(form)
@@ -112,10 +127,18 @@ const handleLogin = async () => {
       await navigateTo('/', { replace: true })
     } else {
       error.value = result.error || 'Login failed'
+      // Show resend verification link if email not verified
+      if (error.value.includes('Email not verified')) {
+        showResendVerification.value = true
+      }
       isLoading.value = false
     }
   } catch (err: any) {
     error.value = err.message || 'An unexpected error occurred'
+    // Show resend verification link if email not verified
+    if (error.value.includes('Email not verified')) {
+      showResendVerification.value = true
+    }
     isLoading.value = false
   }
 }

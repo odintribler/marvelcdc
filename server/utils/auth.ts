@@ -19,6 +19,7 @@ export interface User {
   id: number
   username: string
   email: string
+  emailVerified: boolean
 }
 
 export interface Session {
@@ -75,6 +76,7 @@ export async function getSession(sessionId: string): Promise<Session | null> {
           id: true,
           username: true,
           email: true,
+          emailVerified: true,
         },
       },
     },

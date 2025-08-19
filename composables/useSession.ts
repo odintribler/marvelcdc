@@ -2,6 +2,7 @@ interface User {
   id: number
   username: string
   email: string
+  emailVerified: boolean
 }
 
 interface SessionState {
@@ -39,15 +40,18 @@ export const useSession = () => {
 
   const register = async (userData: { username: string; email: string; password: string }) => {
     try {
-      const response = await $fetch<{ success: boolean; data: { user: User } }>('/api/auth/register', {
+      const response = await $fetch<{ success: boolean; message: string; data: { requiresVerification: boolean; email: string } }>('/api/auth/register', {
         method: 'POST',
         body: userData
       })
 
       if (response.success) {
-        sessionState.value.user = response.data.user
-        sessionState.value.status = 'authenticated'
-        return { success: true }
+        return { 
+          success: true, 
+          message: response.message,
+          requiresVerification: response.data.requiresVerification,
+          email: response.data.email
+        }
       } else {
         return { success: false, error: 'Registration failed' }
       }
@@ -119,6 +123,74 @@ export const useSession = () => {
     }
   }
 
+  const verifyEmail = async (token: string) => {
+    try {
+      const response = await $fetch<{ success: boolean; message: string; data: { user: User } }>('/api/auth/verify-email', {
+        method: 'POST',
+        body: { token }
+      })
+
+      if (response.success) {
+        sessionState.value.user = response.data.user
+        sessionState.value.status = 'authenticated'
+        return { success: true, message: response.message }
+      } else {
+        return { success: false, error: 'Email verification failed' }
+      }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Email verification failed'
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  const resendVerification = async (email: string) => {
+    try {
+      const response = await $fetch<{ success: boolean; message: string }>('/api/auth/resend-verification', {
+        method: 'POST',
+        body: { email }
+      })
+
+      return { success: response.success, message: response.message }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Failed to resend verification email'
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  const forgotPassword = async (email: string) => {
+    try {
+      const response = await $fetch<{ success: boolean; message: string }>('/api/auth/forgot-password', {
+        method: 'POST',
+        body: { email }
+      })
+
+      return { success: response.success, message: response.message }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Failed to send password reset email'
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  const resetPassword = async (token: string, password: string) => {
+    try {
+      const response = await $fetch<{ success: boolean; message: string; data: { user: User } }>('/api/auth/reset-password', {
+        method: 'POST',
+        body: { token, password }
+      })
+
+      if (response.success) {
+        sessionState.value.user = response.data.user
+        sessionState.value.status = 'authenticated'
+        return { success: true, message: response.message }
+      } else {
+        return { success: false, error: 'Password reset failed' }
+      }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Password reset failed'
+      return { success: false, error: errorMessage }
+    }
+  }
+
   const initializeSession = async () => {
     // Only check session if we're in loading state
     // On client-side after hydration, server-side validation should have already set the state
@@ -148,6 +220,10 @@ export const useSession = () => {
     register,
     logout,
     fetchMe,
-    initializeSession
+    initializeSession,
+    verifyEmail,
+    resendVerification,
+    forgotPassword,
+    resetPassword
   }
 }
