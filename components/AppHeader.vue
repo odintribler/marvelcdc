@@ -43,20 +43,9 @@
           </NuxtLink>
         </div>
 
-        <!-- User profile section -->
-        <div class="flex items-center space-x-4">
-          <NuxtLink
-            to="/profile"
-            class="text-sm text-gray-700 hover:text-red-600 transition-colors duration-200 font-medium"
-          >
-            {{ user?.username }}
-          </NuxtLink>
-          <button
-            @click="logout"
-            class="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Logout
-          </button>
+        <!-- User profile section - hidden on mobile, shown on desktop -->
+        <div class="hidden md:flex items-center pr-20 sm:pr-16 md:pr-12">
+          <ProfileDropdown />
         </div>
       </div>
     </div>
@@ -89,6 +78,10 @@
         >
           <div v-show="isMenuOpen" class="fixed inset-y-0 left-0 w-72 sm:w-64 bg-white shadow-lg" @click.stop>
             <nav class="mt-16 px-6 sm:px-4 space-y-2">
+              <!-- Navigation title -->
+              <div class="px-4 py-2 mb-2">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Navigation</h3>
+              </div>
               <NuxtLink
                 to="/"
                 class="block py-4 sm:py-2 px-4 text-base sm:text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600 rounded-md transition-colors duration-200"
@@ -110,6 +103,27 @@
               >
                 Conflicts
               </NuxtLink>
+              
+              <!-- Divider -->
+              <hr class="my-4 border-gray-200">
+              
+              <!-- User section -->
+              <div class="px-4 py-2 text-base sm:text-sm text-gray-900 font-medium">
+                {{ user?.username }}
+              </div>
+              <NuxtLink
+                to="/profile"
+                class="block py-3 sm:py-2 px-8 text-base sm:text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors duration-200"
+                @click="closeMenu"
+              >
+                Profile
+              </NuxtLink>
+              <button
+                @click="handleLogout"
+                class="block w-full text-left py-3 sm:py-2 px-8 text-base sm:text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors duration-200"
+              >
+                Logout
+              </button>
             </nav>
           </div>
         </Transition>
@@ -119,8 +133,8 @@
 </template>
 
 <script setup lang="ts">
-const isMenuOpen = ref(false)
 const { user, logout } = useSession()
+const isMenuOpen = ref(false)
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
@@ -128,5 +142,10 @@ const toggleMenu = () => {
 
 const closeMenu = () => {
   isMenuOpen.value = false
+}
+
+const handleLogout = () => {
+  closeMenu()
+  logout()
 }
 </script>

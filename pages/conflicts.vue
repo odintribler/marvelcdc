@@ -54,57 +54,86 @@
       <div class="space-y-6">
         <div
           v-for="conflict in conflicts"
-          :key="conflict.cardCode"
+          :key="conflict.cardName"
           class="bg-white shadow sm:rounded-lg border border-yellow-200"
         >
-          <div class="px-4 py-5 sm:p-6">
-            <div class="flex justify-between items-start mb-4">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900">{{ conflict.cardName }}</h3>
-                <p class="text-sm text-gray-500">Card Code: {{ conflict.cardCode }}</p>
-              </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-red-600">-{{ conflict.conflictQuantity }}</div>
-                <div class="text-sm text-gray-500">cards short</div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="bg-blue-50 p-3 rounded">
-                <div class="text-xl font-semibold text-blue-900">{{ conflict.totalNeeded }}</div>
-                <div class="text-sm text-blue-600">Total Needed</div>
-              </div>
-              <div class="bg-green-50 p-3 rounded">
-                <div class="text-xl font-semibold text-green-900">{{ conflict.totalOwned }}</div>
-                <div class="text-sm text-green-600">You Own</div>
-              </div>
-              <div class="bg-red-50 p-3 rounded">
-                <div class="text-xl font-semibold text-red-900">{{ conflict.conflictQuantity }}</div>
-                <div class="text-sm text-red-600">Missing</div>
-              </div>
-            </div>
-
-            <div>
-              <h4 class="text-sm font-medium text-gray-900 mb-2">Used in these decks:</h4>
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="deckName in conflict.conflictingDecks"
-                  :key="deckName"
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+          <div class="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-0">
+            <!-- Card image column -->
+            <div class="lg:p-6 p-4 lg:border-r border-gray-200 flex justify-center lg:justify-start">
+              <div class="card-image-container">
+                <img
+                  :src="getCardImageUrl(conflict.cardCodes[0])"
+                  :alt="conflict.cardName"
+                  :class="[
+                    'card-image rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200',
+                    { 'rotated-card': conflict.cardType === 'player_side_scheme' }
+                  ]"
+                  @error="handleImageError"
+                  @load="handleImageLoad"
+                />
+                <div
+                  v-if="imageLoaded[conflict.cardCodes[0]] === false"
+                  class="card-image-fallback rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center p-4"
                 >
-                  {{ deckName }}
-                </span>
+                  <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p class="text-sm font-medium text-gray-600">{{ conflict.cardName }}</p>
+                  <p class="text-xs text-gray-500 mt-1">{{ conflict.cardCodes[0] }}</p>
+                </div>
               </div>
             </div>
 
-            <!-- Quick resolve button -->
-            <div class="mt-4 pt-4 border-t border-gray-200">
-              <button
-                @click="showResolveModal(conflict)"
-                class="btn-secondary text-sm"
-              >
-                Resolve Conflict
-              </button>
+            <!-- Content column -->
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h3 class="text-lg font-medium text-gray-900">{{ conflict.cardName }}</h3>
+                  <p class="text-sm text-gray-500">Card Code: {{ conflict.cardCodes[0] }}</p>
+                </div>
+                <div class="text-right">
+                  <div class="text-2xl font-bold text-red-600">-{{ conflict.conflictQuantity }}</div>
+                  <div class="text-sm text-gray-500">cards short</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-50 p-3 rounded">
+                  <div class="text-xl font-semibold text-blue-900">{{ conflict.totalNeeded }}</div>
+                  <div class="text-sm text-blue-600">Total Needed</div>
+                </div>
+                <div class="bg-green-50 p-3 rounded">
+                  <div class="text-xl font-semibold text-green-900">{{ conflict.totalOwned }}</div>
+                  <div class="text-sm text-green-600">You Own</div>
+                </div>
+                <div class="bg-red-50 p-3 rounded">
+                  <div class="text-xl font-semibold text-red-900">{{ conflict.conflictQuantity }}</div>
+                  <div class="text-sm text-red-600">Missing</div>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="text-sm font-medium text-gray-900 mb-2">Used in these decks:</h4>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="deckName in conflict.conflictingDecks"
+                    :key="deckName"
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                  >
+                    {{ deckName }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Quick resolve button -->
+              <div class="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  @click="showResolveModal(conflict)"
+                  class="btn-secondary text-sm"
+                >
+                  Resolve Conflict
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -132,7 +161,7 @@
     <div v-if="showModal" class="fixed inset-0 z-50 overflow-y-auto">
       <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal"></div>
-        
+
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
@@ -141,7 +170,7 @@
             <p class="text-sm text-gray-600 mb-4">
               Select which decks to deactivate to resolve this conflict. You need to free up {{ selectedConflict?.conflictQuantity }} copies.
             </p>
-            
+
             <div class="space-y-2">
               <label
                 v-for="deckName in selectedConflict?.conflictingDecks"
@@ -158,7 +187,7 @@
               </label>
             </div>
           </div>
-          
+
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               @click="resolveConflict"
@@ -190,6 +219,8 @@ const showModal = ref(false)
 const selectedConflict = ref(null)
 const selectedDecksToDeactivate = ref([])
 const isResolving = ref(false)
+const imageLoaded = ref({})
+const imageFormat = ref({})
 
 // Computed
 const conflicts = computed(() => decksStore.conflicts)
@@ -224,7 +255,7 @@ const resolveConflict = async () => {
       .map(deck => deck.id)
 
     const result = await decksStore.resolveConflicts(decksToDeactivate)
-    
+
     if (result.success) {
       closeModal()
       await refreshConflicts()
@@ -236,8 +267,97 @@ const resolveConflict = async () => {
   }
 }
 
+// Card image methods
+const getCardImageUrl = (cardCode: string) => {
+  // MarvelCDB uses lowercase card codes for images
+  const lowercaseCode = cardCode.toLowerCase()
+  // Try PNG first, fallback to JPG handled in error handler
+  const format = imageFormat.value[lowercaseCode] || 'png'
+  return `https://marvelcdb.com/bundles/cards/${lowercaseCode}.${format}`
+}
+
+const handleImageLoad = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  const src = img.src
+
+  // Extract card code from the image src
+  const match = src.match(/\/([^\/]+)\.(png|jpg)$/)
+  if (match) {
+    const cardCode = match[1].toLowerCase()
+    imageLoaded.value[cardCode] = true
+  }
+}
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  const src = img.src
+
+  // Extract card code and current format from the image src
+  const match = src.match(/\/([^\/]+)\.(png|jpg)$/)
+  if (match) {
+    const cardCode = match[1].toLowerCase()
+    const currentFormat = match[2]
+
+    // If PNG failed, try JPG
+    if (currentFormat === 'png') {
+      imageFormat.value[cardCode] = 'jpg'
+      img.src = `https://marvelcdb.com/bundles/cards/${cardCode}.jpg`
+      return // Don't hide the image, let it try JPG
+    }
+
+    // If JPG also failed, mark as failed and hide
+    imageLoaded.value[cardCode] = false
+    img.style.display = 'none'
+  }
+}
+
 // Load conflicts on mount
 onMounted(() => {
-  decksStore.calculateConflicts()
+  decksStore.fetchDecks()
 })
 </script>
+
+<style scoped>
+.card-image-container {
+  width: 150px;
+  height: 225px;
+  position: relative;
+}
+
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.card-image-fallback {
+  width: 100%;
+  height: 100%;
+  min-height: 225px;
+}
+
+
+.rotated-card {
+  transform: rotate(-90deg) scale(1.5);
+  transform-origin: center;
+  object-fit: contain;
+  object-position: center;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+@media (max-width: 1024px) {
+  .card-image-container {
+    width: 120px;
+    height: 180px;
+  }
+
+
+  .card-image-fallback {
+    min-height: 180px;
+  }
+
+}
+</style>
