@@ -260,3 +260,4 @@ The application is **production-ready** with comprehensive MarvelCDB integration
 - **Static Asset Optimization**: Nuxt build process optimized for production
 - **Security Measures**: JWT tokens, external link safety, input validation
 - Never commit any files unless I personally tested and approved them
+- Make sure we update the privacy policy if we decide to store more data related to the user or other personal information is processed

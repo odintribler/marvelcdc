@@ -18,7 +18,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     '/forgot-password',
     '/reset-password',
     '/verify-email',
-    '/about'
+    '/about',
+    '/privacy-policy'
   ]
   
   // Handle public routes

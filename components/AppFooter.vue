@@ -12,6 +12,11 @@
               </NuxtLink>
             </li>
             <li>
+              <NuxtLink to="/privacy-policy" class="text-sm text-gray-300 hover:text-red-400 transition-colors">
+                Privacy Policy
+              </NuxtLink>
+            </li>
+            <li>
               <a 
                 href="https://marvelcdb.com" 
                 target="_blank" 

@@ -2,9 +2,10 @@
   <header class="bg-white shadow-sm border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
-        <!-- Burger menu button -->
+        <!-- Burger menu button - only show when authenticated -->
         <div class="flex items-center">
           <button
+            v-if="isAuthenticated"
             @click="toggleMenu"
             class="inline-flex items-center justify-center p-3 sm:p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-200"
           >
@@ -43,14 +44,14 @@
           </NuxtLink>
         </div>
 
-        <!-- User profile section - hidden on mobile, shown on desktop -->
-        <div class="hidden md:flex items-center pr-20 sm:pr-16 md:pr-12">
+        <!-- User profile section - hidden on mobile, shown on desktop, only when authenticated -->
+        <div v-if="isAuthenticated" class="hidden md:flex items-center pr-20 sm:pr-16 md:pr-12">
           <ProfileDropdown />
         </div>
       </div>
     </div>
 
-    <!-- Slide-out menu -->
+    <!-- Slide-out menu - only show when authenticated -->
     <Transition
       enter-active-class="transition-opacity duration-300 ease-out"
       leave-active-class="transition-opacity duration-200 ease-in"
@@ -60,7 +61,7 @@
       leave-to-class="opacity-0"
     >
       <div
-        v-show="isMenuOpen"
+        v-show="isMenuOpen && isAuthenticated"
         class="fixed inset-0 z-50"
         @click="closeMenu"
       >
@@ -76,7 +77,7 @@
           leave-from-class="translate-x-0"
           leave-to-class="-translate-x-full"
         >
-          <div v-show="isMenuOpen" class="fixed inset-y-0 left-0 w-72 sm:w-64 bg-white shadow-lg" @click.stop>
+          <div v-show="isMenuOpen && isAuthenticated" class="fixed inset-y-0 left-0 w-72 sm:w-64 bg-white shadow-lg" @click.stop>
             <nav class="mt-16 px-6 sm:px-4 space-y-2">
               <!-- Navigation title -->
               <div class="px-4 py-2 mb-2">
@@ -133,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-const { user, logout } = useSession()
+const { user, logout, isAuthenticated } = useSession()
 const isMenuOpen = ref(false)
 
 const toggleMenu = () => {
