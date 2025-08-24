@@ -25,8 +25,7 @@ export default defineNuxtConfig({
     jwtSecret: process.env.JWT_SECRET,
     databaseUrl: process.env.DATABASE_URL,
     public: {
-      appName: 'Marvel Champions Deck Collection',
-      showBetaRibbon: process.env.SHOW_BETA_RIBBON || 'false'
+      appName: 'Marvel Champions Deck Collection'
     }
   },
   nitro: {

@@ -9,6 +9,6 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const showBeta = computed(() => config.public.showBetaRibbon === 'true')
+// Use server-side environment variable check for Railway compatibility
+const showBeta = process.env.SHOW_BETA_RIBBON === 'true'
 </script>
