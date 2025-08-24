@@ -9,6 +9,6 @@
 </template>
 
 <script setup lang="ts">
-// Use server-side environment variable check for Railway compatibility
-const showBeta = process.env.SHOW_BETA_RIBBON === 'true'
+// Hardcoded to true for now - avoids hydration mismatch issues
+const showBeta = true
 </script>
