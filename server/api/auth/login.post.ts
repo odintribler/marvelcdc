@@ -1,4 +1,5 @@
 import { verifyPassword, createSession, setSessionCookie, cleanupExpiredSessions } from '../../utils/auth'
+import { withRateLimit } from '../../utils/rateLimit'
 import prisma from '../../utils/db'
 import { z } from 'zod'
 
@@ -7,7 +8,7 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 })
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(withRateLimit('login', async (event) => {
   try {
     const body = await readBody(event)
     const { username, password } = loginSchema.parse(body)
@@ -30,6 +31,18 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 401,
         statusMessage: 'Invalid credentials'
+      })
+    }
+
+    // Check if email is verified
+    if (!user.emailVerified) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Email not verified. Please check your email and verify your account.',
+        data: {
+          requiresVerification: true,
+          email: user.email
+        }
       })
     }
 
@@ -87,4 +100,4 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Internal server error'
     })
   }
-})
+}))

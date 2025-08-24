@@ -19,6 +19,7 @@ export interface User {
   id: number
   username: string
   email: string
+  emailVerified: boolean
 }
 
 export interface Session {
@@ -66,7 +67,7 @@ export async function createSession(userId: number): Promise<Session> {
   }
 }
 
-export async function getSession(sessionId: string): Promise<Session | null> {
+export async function getSessionById(sessionId: string): Promise<Session | null> {
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
     include: {
@@ -75,6 +76,7 @@ export async function getSession(sessionId: string): Promise<Session | null> {
           id: true,
           username: true,
           email: true,
+          emailVerified: true,
         },
       },
     },
@@ -163,7 +165,7 @@ export async function validateSession(event: H3Event): Promise<{ session: Sessio
     return null
   }
 
-  const session = await getSession(sessionId)
+  const session = await getSessionById(sessionId)
   
   if (!session || !session.user) {
     return null
@@ -181,7 +183,7 @@ export async function validateSessionById(sessionId: string): Promise<{ session:
     return null
   }
 
-  const session = await getSession(sessionId)
+  const session = await getSessionById(sessionId)
   
   if (!session || !session.user) {
     return null
