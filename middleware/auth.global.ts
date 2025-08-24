@@ -11,10 +11,20 @@ export default defineNuxtRouteMiddleware(async (to) => {
     await initializeSession()
   }
   
-  // Handle public routes (login/register)
-  if (to.path === '/login' || to.path === '/register') {
-    // If authenticated, redirect to dashboard (server-side for no flash)
-    if (isAuthenticated.value) {
+  // Define public routes that don't require authentication
+  const publicRoutes = [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
+    '/about'
+  ]
+  
+  // Handle public routes
+  if (publicRoutes.includes(to.path)) {
+    // If authenticated and trying to access login/register, redirect to dashboard
+    if (isAuthenticated.value && (to.path === '/login' || to.path === '/register')) {
       return navigateTo('/', { replace: true })
     }
     return

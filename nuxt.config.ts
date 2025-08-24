@@ -6,6 +6,21 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt'
   ],
+  app: {
+    head: {
+      title: 'MarvelCDC - Deck Collection Manager',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'A professional deck collection management tool for Marvel Champions LCG. Track your collection, import decks from MarvelCDB, and detect card conflicts.' },
+        { name: 'theme-color', content: '#DC2626' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ]
+    }
+  },
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET,
     databaseUrl: process.env.DATABASE_URL,

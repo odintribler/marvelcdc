@@ -1,5 +1,8 @@
-import { hashPassword, createSession, setSessionCookie } from '../../utils/auth'
+import { hashPassword } from '../../utils/auth'
+import { withRateLimit, validatePasswordStrength, validateEmailFormat, validateUsername } from '../../utils/rateLimit'
 import prisma from '../../utils/db'
+import { sendEmail, createEmailTokenData, createVerificationUrl } from '../../utils/email'
+import { createVerificationEmailTemplate } from '../../utils/emailTemplates'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -8,10 +11,34 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters')
 })
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(withRateLimit('register', async (event) => {
   try {
     const body = await readBody(event)
     const { username, email, password } = registerSchema.parse(body)
+
+    // Additional validation
+    const usernameValidation = validateUsername(username)
+    if (!usernameValidation.valid) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: usernameValidation.errors[0]
+      })
+    }
+
+    if (!validateEmailFormat(email)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Invalid email format'
+      })
+    }
+
+    const passwordValidation = validatePasswordStrength(password)
+    if (!passwordValidation.valid) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: passwordValidation.errors[0]
+      })
+    }
 
     // Check if user already exists
     const existingUser = await prisma.user.findFirst({
@@ -33,29 +60,40 @@ export default defineEventHandler(async (event) => {
     // Hash password using Argon2
     const passwordHash = await hashPassword(password)
 
-    // Create user
+    // Generate email verification token
+    const { token, expiresAt } = createEmailTokenData()
+
+    // Create user with email verification token
     const user = await prisma.user.create({
       data: {
         username,
         email,
-        passwordHash
+        passwordHash,
+        emailVerificationToken: token,
+        emailTokenExpiresAt: expiresAt
       }
     })
 
-    // Create session
-    const session = await createSession(user.id)
+    // Send verification email
+    const verificationUrl = createVerificationUrl(token)
+    const { html, text } = createVerificationEmailTemplate({
+      username: user.username,
+      verificationUrl
+    })
 
-    // Set session cookie
-    setSessionCookie(event, session.id)
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify your email - MarvelCDC',
+      html,
+      text
+    })
 
     return {
       success: true,
+      message: 'Registration successful! Please check your email to verify your account.',
       data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email
-        }
+        requiresVerification: true,
+        email: user.email
       }
     }
   } catch (error: any) {
@@ -76,4 +114,4 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Internal server error'
     })
   }
-})
+}))

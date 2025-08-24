@@ -11,18 +11,37 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                    Int      @id @default(autoincrement())
+  username              String   @unique
+  email                 String   @unique
+  passwordHash          String   @map("password_hash")
+  emailVerified         Boolean  @default(false) @map("email_verified")
+  emailVerificationToken String? @map("email_verification_token")
+  emailTokenExpiresAt   DateTime? @map("email_token_expires_at")
+  passwordResetToken    String?  @map("password_reset_token")
+  passwordTokenExpiresAt DateTime? @map("password_token_expires_at")
+  
+  // Profile fields
+  firstName             String?  @map("first_name")
+  lastName              String?  @map("last_name")
+  marvelcdbProfile      String?  @map("marvelcdb_profile")
+  
+  // Email change fields
+  pendingEmail          String?  @map("pending_email")
+  pendingEmailToken     String?  @map("pending_email_token")
+  pendingEmailTokenExpiresAt DateTime? @map("pending_email_token_expires_at")
+  
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   // Relations
   collections Collection[]
   decks       Deck[]
   sessions    Session[]
 
+  @@index([emailVerificationToken])
+  @@index([passwordResetToken])
+  @@index([pendingEmailToken])
   @@map("users")
 }
 
