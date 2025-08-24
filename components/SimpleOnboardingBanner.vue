@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!isDismissed" class="mb-6">
+  <div v-if="shouldShowBanner" class="mb-6">
     <!-- Onboarding Banner -->
     <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg shadow-sm">
       <div class="px-6 py-4">
@@ -119,6 +119,17 @@ const collectionStore = useCollectionStore()
 
 // Simple local state
 const isDismissed = ref(false)
+
+// Computed - hide banner if user has any packs or if manually dismissed
+const shouldShowBanner = computed(() => {
+  if (isDismissed.value) return false
+  
+  // Check if user owns any packs
+  const ownedPacks = collectionStore.ownedPacks || []
+  const hasAnyPacks = ownedPacks.some(pack => pack.quantity > 0)
+  
+  return !hasAnyPacks
+})
 
 // Methods
 const dismissBanner = () => {
