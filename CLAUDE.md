@@ -259,3 +259,4 @@ The application is **production-ready** with comprehensive MarvelCDB integration
 - **Environment Variables**: DATABASE_URL (Railway PostgreSQL), JWT_SECRET, NODE_ENV
 - **Static Asset Optimization**: Nuxt build process optimized for production
 - **Security Measures**: JWT tokens, external link safety, input validation
+- Never commit any files unless I personally tested and approved them

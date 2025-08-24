@@ -20,6 +20,17 @@ model User {
   emailTokenExpiresAt   DateTime? @map("email_token_expires_at")
   passwordResetToken    String?  @map("password_reset_token")
   passwordTokenExpiresAt DateTime? @map("password_token_expires_at")
+  
+  // Profile fields
+  firstName             String?  @map("first_name")
+  lastName              String?  @map("last_name")
+  marvelcdbProfile      String?  @map("marvelcdb_profile")
+  
+  // Email change fields
+  pendingEmail          String?  @map("pending_email")
+  pendingEmailToken     String?  @map("pending_email_token")
+  pendingEmailTokenExpiresAt DateTime? @map("pending_email_token_expires_at")
+  
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
@@ -30,6 +41,7 @@ model User {
 
   @@index([emailVerificationToken])
   @@index([passwordResetToken])
+  @@index([pendingEmailToken])
   @@map("users")
 }
 

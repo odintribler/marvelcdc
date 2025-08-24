@@ -18,6 +18,11 @@ export const RATE_LIMITS = {
   forgotPassword: { attempts: 3, window: ms('1h') }, // 3 attempts per hour
   resetPassword: { attempts: 5, window: ms('1h') }, // 5 attempts per hour
   
+  // Profile management endpoints  
+  profileUpdate: { attempts: 10, window: ms('1h') }, // 10 profile updates per hour
+  emailChangeVerification: { attempts: 5, window: ms('1h') }, // 5 email verifications per hour
+  profileDelete: { attempts: 2, window: ms('1h') }, // 2 account deletions per hour (safety)
+  
   // General API endpoints
   api: { attempts: 100, window: ms('15m') }, // 100 requests per 15 minutes
 }

@@ -3,6 +3,10 @@ interface User {
   username: string
   email: string
   emailVerified: boolean
+  firstName?: string | null
+  lastName?: string | null
+  marvelcdbProfile?: string | null
+  pendingEmail?: string | null
 }
 
 interface SessionState {
@@ -191,6 +195,91 @@ export const useSession = () => {
     }
   }
 
+  const fetchProfile = async () => {
+    try {
+      const response = await $fetch<{ success: boolean; data: { profile: User } }>('/api/profile')
+      
+      if (response.success) {
+        // Update the user session with the latest profile data
+        sessionState.value.user = response.data.profile
+        return { success: true, profile: response.data.profile }
+      } else {
+        return { success: false, error: 'Failed to fetch profile' }
+      }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Failed to fetch profile'
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  const updateProfile = async (profileData: Partial<Pick<User, 'username' | 'email' | 'firstName' | 'lastName' | 'marvelcdbProfile'>>) => {
+    try {
+      const response = await $fetch<{ success: boolean; message: string; data: { profile: User } }>('/api/profile', {
+        method: 'PUT',
+        body: profileData
+      })
+
+      if (response.success) {
+        // Update the user session with the updated profile data
+        sessionState.value.user = response.data.profile
+        return { success: true, message: response.message, profile: response.data.profile }
+      } else {
+        return { success: false, error: 'Profile update failed' }
+      }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Profile update failed'
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  const deleteAccount = async () => {
+    try {
+      const response = await $fetch<{ success: boolean; message: string }>('/api/profile', {
+        method: 'DELETE'
+      })
+
+      if (response.success) {
+        // Clear session state after account deletion
+        sessionState.value.user = null
+        sessionState.value.status = 'unauthenticated'
+        
+        // Clear any client-side storage
+        if (process.client) {
+          try {
+            // Clear localStorage
+            localStorage.removeItem('auth-token')
+            localStorage.removeItem('session')
+            localStorage.removeItem('user')
+            
+            // Clear sessionStorage
+            sessionStorage.removeItem('auth-token')
+            sessionStorage.removeItem('session')
+            sessionStorage.removeItem('user')
+            
+            // Force clear cookies client-side as backup
+            const cookiesToClear = ['session', 'auth-token', 'token', 'jwt', 'authentication']
+            for (const cookieName of cookiesToClear) {
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${window.location.hostname}`
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+            }
+          } catch (e) {
+            console.warn('Client-side cleanup error:', e)
+          }
+        }
+        
+        // Navigate to login page
+        await navigateTo('/login', { replace: true })
+        
+        return { success: true, message: response.message }
+      } else {
+        return { success: false, error: 'Account deletion failed' }
+      }
+    } catch (error: any) {
+      const errorMessage = error.data?.message || 'Account deletion failed'
+      return { success: false, error: errorMessage }
+    }
+  }
+
   const initializeSession = async () => {
     // Only check session if we're in loading state
     // On client-side after hydration, server-side validation should have already set the state
@@ -224,6 +313,11 @@ export const useSession = () => {
     verifyEmail,
     resendVerification,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    
+    // Profile methods
+    fetchProfile,
+    updateProfile,
+    deleteAccount
   }
 }
