@@ -6,6 +6,83 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - Develop Branch
 
+*No unreleased changes*
+
+---
+
+## [1.2.0] - 2025-01-24
+
+### 🎨 **Visual & UX Enhancements**
+
+#### **BETA Ribbon System**
+- **Environment-Controlled Banner**: Configurable BETA ribbon with `SHOW_BETA_RIBBON` environment variable
+- **Diagonal Design**: Professional top-right corner placement with 45-degree rotation
+- **Responsive Styling**: Scales appropriately across desktop and mobile devices
+- **Non-Intrusive**: Clean design that doesn't interfere with existing UI elements
+
+#### **Enhanced Mobile Navigation**
+- **Professional Profile Dropdown**: Desktop dropdown menu with user profile management
+- **Improved Burger Menu**: Mobile navigation with clear sectioning and "Navigation" title
+- **User Section Integration**: Profile and logout options properly organized in mobile menu
+- **Responsive Padding**: Dynamic spacing to prevent UI element overlap with BETA ribbon
+
+#### **Card Images Integration**
+- **MarvelCDB Image Display**: Full card images displayed alongside conflict information
+- **Two-Column Layout**: Dedicated image column (200px) with content column for optimal viewing
+- **PNG/JPG Fallback System**: Automatic format detection and fallback for missing images
+- **Loading States**: Professional placeholder display during image loading
+- **Error Handling**: Graceful degradation when card images are unavailable
+
+#### **Player Side Scheme Rotation**
+- **Automatic Card Rotation**: 90-degree clockwise rotation for horizontal player_side_scheme cards
+- **Proper Scaling**: 1.5x scale factor ensures rotated cards are properly sized
+- **Clean Appearance**: Removed shadows and borders from rotated cards for better visual distinction
+- **Consistent Container**: All cards use uniform container dimensions regardless of rotation
+- **Perfect Fit**: `object-fit: contain` ensures full card visibility without cropping
+
+#### **Smart Collection Onboarding**
+- **Auto-Hide Logic**: Quickstart banner automatically disappears when user owns 1+ packs
+- **Improved UX Flow**: Removes visual clutter once collection setup has begun
+- **Manual Override**: Users can still manually dismiss banner if preferred
+- **Intelligent Detection**: Checks actual pack ownership rather than just user activity
+
+### 🔧 **Technical Improvements**
+
+#### **Component Architecture**
+- **BetaRibbon Component**: Reusable ribbon component with environment variable integration
+- **ProfileDropdown Component**: Professional dropdown with click-outside-to-close functionality
+- **Enhanced Conflicts Page**: Two-column grid layout with proper image integration
+- **Responsive Design**: All components optimized for mobile and desktop viewing
+
+#### **State Management**
+- **Image Loading States**: Reactive image loading and error state management
+- **Format Detection**: Dynamic PNG/JPG format switching based on availability
+- **Collection Awareness**: Smart banner visibility based on user's collection status
+
+#### **CSS Enhancements**
+- **Card Image Styling**: Professional card display with hover effects and transitions
+- **Rotation Transforms**: Proper CSS transforms for scheme card rotation
+- **Mobile Optimization**: Responsive container sizing (150×225px desktop, 120×180px mobile)
+- **Visual Polish**: Consistent spacing, shadows, and border radius throughout
+
+### 🐛 **Bug Fixes**
+- **Vue Template Syntax**: Fixed missing closing tag that prevented component compilation
+- **Navigation Overlap**: Resolved BETA ribbon covering logout button on mobile
+- **Image Placeholder**: Fixed placeholder visibility logic for failed image loads
+- **Component Integration**: Proper component imports and dependency management
+
+### 📱 **Mobile Experience**
+
+#### **Enhanced Navigation**
+- **Profile Management**: Clean dropdown integration for user profile access
+- **Organized Menu**: Clear sectioning with navigation title and user section
+- **Touch Optimization**: Larger touch targets and improved spacing
+
+#### **Card Display**
+- **Responsive Images**: Card images scale appropriately for mobile viewing
+- **Two-Column Layout**: Maintains professional appearance across all device sizes
+- **Touch-Friendly**: Optimized for touch interaction and mobile viewing
+
 ### ✨ **Enhanced User Experience**
 
 #### **Conflict Modal Improvements (v1.1)**
