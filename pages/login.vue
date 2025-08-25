@@ -1,6 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+  <div class="min-h-screen bg-gray-50 flex flex-col py-12 sm:px-6 lg:px-8">
+    <div class="flex-1 flex flex-col justify-center">
+      <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <div class="text-center">
         <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
           Marvel Champions Deck Collection
@@ -93,9 +94,10 @@
         </form>
       </div>
     </div>
+    </div>
     
     <!-- Footer -->
-    <div class="absolute bottom-0 left-0 right-0">
+    <div class="mt-auto">
       <AuthFooter />
     </div>
   </div>
