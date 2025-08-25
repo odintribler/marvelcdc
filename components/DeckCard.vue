@@ -193,45 +193,29 @@
           <div class="flex-1 px-2 py-1 overflow-hidden">
             <div class="grid grid-cols-2 gap-x-3 h-full text-xs leading-tight">
               <!-- Left column -->
-              <div class="space-y-1">
-                <!-- Hero cards -->
-                <div v-if="leftColumnSections.hero.length > 0" class="space-y-0">
-                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">Hero ({{ leftColumnSections.heroCount }})</h6>
-                  <div v-for="card in leftColumnSections.hero" :key="card.id" class="flex">
-                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
-                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
+              <div class="space-y-0">
+                <template v-for="(item, index) in columnLayout.leftColumn" :key="`left-${index}`">
+                  <h6 v-if="item.type === 'heroHeader'" class="font-bold text-gray-800 text-xs uppercase tracking-wider" :class="index > 0 ? 'pt-2' : ''">Hero ({{ item.count }})</h6>
+                  <h6 v-else-if="item.type === 'aspectHeader'" class="font-bold text-gray-800 text-xs uppercase tracking-wider pt-2">{{ item.aspectGroup.name }} ({{ item.aspectGroup.count }})</h6>
+                  <h6 v-else-if="item.type === 'basicHeader'" class="font-bold text-gray-800 text-xs uppercase tracking-wider pt-2">Basic ({{ item.count }})</h6>
+                  <div v-else class="flex">
+                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ item.card.quantity }}×</span>
+                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ item.card.cardName }}</span>
                   </div>
-                </div>
-
-                <!-- Aspect cards (left column) -->
-                <div v-for="aspectGroup in leftColumnSections.aspectGroups" :key="aspectGroup.faction" class="space-y-0">
-                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">{{ aspectGroup.name }} ({{ aspectGroup.count }})</h6>
-                  <div v-for="card in aspectGroup.cards" :key="card.id" class="flex">
-                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
-                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
-                  </div>
-                </div>
+                </template>
               </div>
 
               <!-- Right column -->
-              <div class="space-y-1">
-                <!-- Aspect cards (right column - overflow) -->
-                <div v-for="aspectGroup in rightColumnSections.aspectGroups" :key="aspectGroup.faction" class="space-y-0">
-                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">{{ aspectGroup.name }} ({{ aspectGroup.count }})</h6>
-                  <div v-for="card in aspectGroup.cards" :key="card.id" class="flex">
-                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
-                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
+              <div class="space-y-0">
+                <template v-for="(item, index) in columnLayout.rightColumn" :key="`right-${index}`">
+                  <h6 v-if="item.type === 'heroHeader'" class="font-bold text-gray-800 text-xs uppercase tracking-wider" :class="index > 0 ? 'pt-2' : ''">Hero ({{ item.count }})</h6>
+                  <h6 v-else-if="item.type === 'aspectHeader'" class="font-bold text-gray-800 text-xs uppercase tracking-wider pt-2">{{ item.aspectGroup.name }} ({{ item.aspectGroup.count }})</h6>
+                  <h6 v-else-if="item.type === 'basicHeader'" class="font-bold text-gray-800 text-xs uppercase tracking-wider pt-2">Basic ({{ item.count }})</h6>
+                  <div v-else class="flex">
+                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ item.card.quantity }}×</span>
+                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ item.card.cardName }}</span>
                   </div>
-                </div>
-
-                <!-- Basic cards -->
-                <div v-if="rightColumnSections.basic.length > 0" class="space-y-0">
-                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">Basic ({{ rightColumnSections.basicCount }})</h6>
-                  <div v-for="card in rightColumnSections.basic" :key="card.id" class="flex">
-                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
-                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
-                  </div>
-                </div>
+                </template>
               </div>
             </div>
           </div>
@@ -540,20 +524,67 @@ const heroCount = computed(() => heroCards.value.reduce((sum, card) => sum + car
 const totalAspectCount = computed(() => aspectCardGroups.value.reduce((sum, group) => sum + group.count, 0))
 const basicCount = computed(() => basicCards.value.reduce((sum, card) => sum + card.quantity, 0))
 
-// Two-column layout sections with multi-aspect support
-const leftColumnSections = computed(() => {
-  return {
-    hero: heroCards.value,
-    aspectGroups: aspectCardGroups.value.slice(0, Math.ceil(aspectCardGroups.value.length / 2)),
-    heroCount: heroCount.value
+// Dynamic two-column layout based on line count
+const columnLayout = computed(() => {
+  const maxLinesPerColumn = 18
+  let currentLine = 0
+  const leftColumn = []
+  const rightColumn = []
+  let isRightColumn = false
+  
+  // Helper to add content to current column
+  const addToCurrentColumn = (content) => {
+    const isHeader = content.type.includes('Header')
+    
+    // If we're at the line limit and this is a header, switch to right column first
+    if (!isRightColumn && currentLine >= maxLinesPerColumn && isHeader) {
+      isRightColumn = true
+    }
+    
+    if (isRightColumn) {
+      rightColumn.push(content)
+    } else {
+      leftColumn.push(content)
+      // Check if we should switch to right column after adding this item
+      if (currentLine >= maxLinesPerColumn) {
+        isRightColumn = true
+      }
+    }
   }
-})
-
-const rightColumnSections = computed(() => {
-  return {
-    aspectGroups: aspectCardGroups.value.slice(Math.ceil(aspectCardGroups.value.length / 2)),
-    basic: basicCards.value,
-    basicCount: basicCount.value
+  
+  // Add hero cards
+  if (heroCards.value.length > 0) {
+    currentLine++ // Header line
+    addToCurrentColumn({ type: 'heroHeader', count: heroCount.value })
+    
+    heroCards.value.forEach(card => {
+      currentLine++ // Card line
+      addToCurrentColumn({ type: 'heroCard', card })
+    })
   }
+  
+  // Add aspect groups
+  aspectCardGroups.value.forEach(aspectGroup => {
+    currentLine++ // Header line
+    addToCurrentColumn({ type: 'aspectHeader', aspectGroup })
+    
+    aspectGroup.cards.forEach(card => {
+      currentLine++ // Card line
+      addToCurrentColumn({ type: 'aspectCard', card })
+    })
+  })
+  
+  // Add basic cards
+  if (basicCards.value.length > 0) {
+    currentLine++ // Header line
+    addToCurrentColumn({ type: 'basicHeader', count: basicCount.value })
+    
+    basicCards.value.forEach(card => {
+      currentLine++ // Card line
+      addToCurrentColumn({ type: 'basicCard', card })
+    })
+  }
+  
+  return { leftColumn, rightColumn }
 })
 </script>
