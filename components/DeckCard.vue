@@ -1,7 +1,15 @@
 <template>
-  <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
-    <!-- Deck header -->
-    <div class="p-4 sm:p-6 pb-4">
+  <div class="relative cursor-pointer" :style="'aspect-ratio: 66/91; perspective: 1000px;'" @click="toggleExpanded">
+    <!-- Card container with flip animation -->
+    <div 
+      class="flip-card-inner w-full h-full transition-transform duration-700 transform-style-preserve-3d" 
+      :class="{ 'flip-card-flipped': isExpanded }"
+    >
+      <!-- Front of card -->
+      <div class="flip-card-face flip-card-front bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+        <div class="flex flex-col h-full">
+      <!-- Deck header -->
+      <div class="p-4 sm:p-6 pb-4 flex-1">
       <div class="flex items-start space-x-3 sm:space-x-4 mb-3">
         <!-- Hero thumbnail -->
         <div class="flex-shrink-0">
@@ -9,13 +17,14 @@
             :src="heroImageUrl" 
             :alt="deck.heroName"
             class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg object-cover border border-gray-200 shadow-sm"
+            :class="!deck.isActive ? 'opacity-50' : ''"
             @error="onImageError"
           />
         </div>
         
         <!-- Deck info -->
         <div class="flex-1 min-w-0">
-          <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 leading-tight">
+          <h4 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 leading-tight" :class="!deck.isActive ? 'opacity-70' : ''">
             <a 
               v-if="deck.deckUrl" 
               :href="deck.deckUrl" 
@@ -27,81 +36,47 @@
             </a>
             <span v-else class="text-gray-900">{{ deck.name }}</span>
           </h4>
-          <div class="flex items-center space-x-2 mb-2 flex-wrap gap-1">
-            <span class="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-              {{ deck.heroName }}
-            </span>
-            <span v-if="deck.isActive" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-              Active
-            </span>
-            <span v-else class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-              Inactive
-            </span>
-          </div>
         </div>
         
-        <!-- Status indicator -->
-        <div class="flex items-center space-x-2 hidden sm:flex">
-          <span
-            :class="[
-              'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
-              {
-                'bg-green-100 text-green-800': !hasConflicts && deck.isActive,
-                'bg-yellow-100 text-yellow-800': hasConflicts && deck.isActive,
-                'bg-gray-100 text-gray-600': !deck.isActive
-              }
-            ]"
+        <!-- Flip button -->
+        <div class="flex items-center">
+          <button
+            @click.stop="toggleExpanded"
+            class="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            {{ getStatusText() }}
-          </span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <!-- Tags and metadata -->
-      <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
-        <div class="flex items-center space-x-4">
-          <span>{{ totalCards }} cards</span>
-          <span v-if="hasConflicts" class="text-yellow-600 font-medium">
-            {{ conflictCount }} conflict{{ conflictCount !== 1 ? 's' : '' }}
-          </span>
+      <!-- Conflicts section or Ready/Deactivated stamp -->
+      <div v-if="hasConflicts" class="bg-yellow-50 border border-yellow-200 rounded px-2 py-2 mb-4">
+        <h6 class="font-bold text-yellow-800 text-xs uppercase tracking-wider mb-1">Conflicts</h6>
+        <div :class="props.conflicts && props.conflicts.length > 4 ? 'grid grid-cols-2 gap-x-3' : 'space-y-0'">
+          <div v-for="conflict in props.conflicts" :key="conflict.cardName" class="flex">
+            <span class="w-3 text-right mr-1 font-medium text-xs text-yellow-800">{{ conflict.conflictQuantity }}×</span>
+            <span class="flex-1 text-yellow-800 text-xs leading-none">{{ conflict.cardName }}</span>
+          </div>
         </div>
-        <!-- Show status on mobile -->
-        <div class="sm:hidden">
-          <span
-            :class="[
-              'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-              {
-                'bg-green-100 text-green-800': !hasConflicts && deck.isActive,
-                'bg-yellow-100 text-yellow-800': hasConflicts && deck.isActive,
-                'bg-gray-100 text-gray-600': !deck.isActive
-              }
-            ]"
-          >
-            {{ getStatusText() }}
-          </span>
+      </div>
+      <div v-else class="mb-4 mt-8 flex justify-center items-center py-8">
+        <div class="ready-stamp" :class="deck.isActive ? '' : 'deactivated-stamp'">
+          {{ deck.isActive ? 'Ready for play' : 'Deactivated' }}
         </div>
       </div>
     </div>
 
     <!-- Action buttons bar -->
-    <div class="px-4 sm:px-6 py-3 bg-gray-50 border-t border-gray-200">
+    <div class="px-4 sm:px-6 py-3 bg-gray-50 border-t border-gray-200" @click.stop>
       <!-- Mobile layout: Stack buttons vertically -->
       <div class="sm:hidden space-y-2">
-        <div class="flex items-center space-x-2">
-          <button
-            @click="toggleExpanded"
-            class="flex-1 inline-flex items-center justify-center py-2 px-3 text-sm text-gray-600 hover:text-gray-900 transition-colors border border-gray-300 rounded-md bg-white"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-            {{ isExpanded ? 'Hide Cards' : 'View Cards' }}
-          </button>
-          
+        <div class="flex items-center">
           <button
             v-if="hasConflicts"
-            @click="showConflicts"
-            class="flex-1 inline-flex items-center justify-center py-2 px-3 text-sm text-yellow-600 hover:text-yellow-700 transition-colors border border-yellow-300 rounded-md bg-white"
+            @click.stop="showConflicts"
+            class="w-full inline-flex items-center justify-center py-2 px-3 text-sm text-yellow-600 hover:text-yellow-700 transition-colors border border-yellow-300 rounded-md bg-white"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -110,40 +85,44 @@
           </button>
         </div>
         
-        <!-- Toggle active/inactive - full width on mobile -->
-        <button
-          @click="toggleActive"
-          class="w-full inline-flex items-center justify-center py-3 px-4 text-sm font-medium rounded-md transition-colors"
-          :class="deck.isActive 
-            ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
-            : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'"
-        >
-          <svg v-if="deck.isActive" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-5-4V8a4 4 0 118 0v2M9 21v-5a2 2 0 00-2-2H5a2 2 0 00-2 2v5a2 2 0 002 2h2a2 2 0 002-2z" />
-          </svg>
-          {{ deck.isActive ? 'Deactivate' : 'Activate' }}
-        </button>
+        <!-- Toggle active/inactive and delete - mobile -->
+        <div class="flex items-center space-x-2">
+          <button
+            @click.stop="toggleActive"
+            class="flex-1 inline-flex items-center justify-center py-3 px-4 text-sm font-medium rounded-md transition-colors"
+            :class="deck.isActive 
+              ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
+              : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'"
+          >
+            <svg v-if="deck.isActive" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-5-4V8a4 4 0 118 0v2M9 21v-5a2 2 0 00-2-2H5a2 2 0 00-2 2v5a2 2 0 002 2h2a2 2 0 002-2z" />
+            </svg>
+            {{ deck.isActive ? 'Deactivate' : 'Activate' }}
+          </button>
+          
+          <!-- Delete button for inactive decks - mobile -->
+          <button
+            v-if="!deck.isActive"
+            @click.stop="deleteDeck"
+            class="inline-flex items-center p-3 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md border border-red-200 transition-colors"
+            title="Delete deck"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Desktop layout: Horizontal -->
       <div class="hidden sm:flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <button
-            @click="toggleExpanded"
-            class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-            </svg>
-            {{ isExpanded ? 'Hide Cards' : 'View Cards' }}
-          </button>
-          
+        <div class="flex items-center">
           <button
             v-if="hasConflicts"
-            @click="showConflicts"
+            @click.stop="showConflicts"
             class="inline-flex items-center text-sm text-yellow-600 hover:text-yellow-700 transition-colors"
           >
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,78 +132,170 @@
           </button>
         </div>
         
-        <!-- Toggle active/inactive -->
-        <button
-          @click="toggleActive"
-          class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
-          :class="deck.isActive 
-            ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
-            : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'"
-        >
-          <svg v-if="deck.isActive" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <svg v-else class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-5-4V8a4 4 0 118 0v2M9 21v-5a2 2 0 00-2-2H5a2 2 0 00-2 2v5a2 2 0 002 2h2a2 2 0 002-2z" />
-          </svg>
-          {{ deck.isActive ? 'Deactivate' : 'Activate' }}
-        </button>
+        <div class="flex items-center space-x-2">
+          <!-- Toggle active/inactive -->
+          <button
+            @click.stop="toggleActive"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
+            :class="deck.isActive 
+              ? 'text-red-700 bg-red-50 hover:bg-red-100 border border-red-200' 
+              : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'"
+          >
+            <svg v-if="deck.isActive" class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg v-else class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-5-4V8a4 4 0 118 0v2M9 21v-5a2 2 0 00-2-2H5a2 2 0 00-2 2v5a2 2 0 002 2h2a2 2 0 002-2z" />
+            </svg>
+            {{ deck.isActive ? 'Deactivate' : 'Activate' }}
+          </button>
+          
+          <!-- Delete button for inactive decks -->
+          <button
+            v-if="!deck.isActive"
+            @click.stop="deleteDeck"
+            class="inline-flex items-center p-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+            title="Delete deck"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
+        </div>
+      </div>
 
-    <!-- Expandable card list -->
-    <div v-if="isExpanded" class="border-t border-gray-200 bg-gray-50">
-      <div class="px-4 sm:px-6 py-4">
-        <h5 class="text-sm font-medium text-gray-900 mb-3">Deck Cards ({{ totalCards }})</h5>
-        <div class="max-h-64 overflow-y-auto space-y-3">
-          <!-- Cards grouped by faction -->
-          <div v-for="group in sortedCardGroups" :key="group.title" class="border rounded-md overflow-hidden" :class="getFactionColorClasses(group.faction)">
-            <div class="px-3 py-2 border-b" :class="getFactionColorClasses(group.faction)">
-              <h6 class="text-xs font-semibold uppercase tracking-wider flex items-center">
-                <span 
-                  class="w-2 h-2 rounded-full mr-2"
-                  :class="getFactionDotClass(group.faction)"
-                ></span>
-                {{ group.title }} ({{ group.cards.length }})
-              </h6>
+      <!-- Back of card (card list) -->
+      <div class="flip-card-face flip-card-back bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="h-full flex flex-col" :class="!deck.isActive ? 'opacity-50' : ''">
+          <!-- Header with hero identity -->
+          <div class="px-3 py-2 text-white relative" :class="aspectHeaderColor">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h4 class="text-sm font-bold">{{ deck.heroName }}</h4>
+                <p class="text-xs opacity-90">{{ deck.name }}</p>
+              </div>
+              <button
+                @click.stop="toggleExpanded"
+                class="text-white transition-colors"
+                :class="aspectHoverColor"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
             </div>
-            <div class="bg-white">
-              <!-- Card type groups within faction -->
-              <div v-for="typeGroup in group.cardTypeGroups" :key="typeGroup.title" class="border-t first:border-t-0 border-gray-100">
-                <div class="px-3 py-1.5 bg-gray-50 border-b border-gray-100">
-                  <h6 class="text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    {{ typeGroup.title }} ({{ typeGroup.cards.length }})
-                  </h6>
-                </div>
-                <div
-                  v-for="card in typeGroup.cards"
-                  :key="card.id"
-                  class="flex items-center justify-between px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                >
-                  <div class="flex items-center space-x-2 flex-1 min-w-0">
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 flex-shrink-0">
-                      ×{{ card.quantity }}
-                    </span>
-                    <span class="font-medium text-gray-900 text-sm">{{ card.cardName }}</span>
+          </div>
+
+          <!-- Card list in two-column format -->
+          <div class="flex-1 px-2 py-1 overflow-hidden">
+            <div class="grid grid-cols-2 gap-x-3 h-full text-xs leading-tight">
+              <!-- Left column -->
+              <div class="space-y-1">
+                <!-- Hero cards -->
+                <div v-if="leftColumnSections.hero.length > 0" class="space-y-0">
+                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">Hero ({{ leftColumnSections.heroCount }})</h6>
+                  <div v-for="card in leftColumnSections.hero" :key="card.id" class="flex">
+                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
+                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
                   </div>
-                  <div v-if="getCardConflict(card)" class="flex items-center ml-2 flex-shrink-0">
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                      <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
-                      <span class="hidden sm:inline">{{ getCardConflict(card) }}</span>
-                      <span class="sm:hidden">Need {{ getCardConflictQuantity(card) }}</span>
-                    </span>
+                </div>
+
+                <!-- Aspect cards (left column) -->
+                <div v-for="aspectGroup in leftColumnSections.aspectGroups" :key="aspectGroup.faction" class="space-y-0">
+                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">{{ aspectGroup.name }} ({{ aspectGroup.count }})</h6>
+                  <div v-for="card in aspectGroup.cards" :key="card.id" class="flex">
+                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
+                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right column -->
+              <div class="space-y-1">
+                <!-- Aspect cards (right column - overflow) -->
+                <div v-for="aspectGroup in rightColumnSections.aspectGroups" :key="aspectGroup.faction" class="space-y-0">
+                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">{{ aspectGroup.name }} ({{ aspectGroup.count }})</h6>
+                  <div v-for="card in aspectGroup.cards" :key="card.id" class="flex">
+                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
+                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
+                  </div>
+                </div>
+
+                <!-- Basic cards -->
+                <div v-if="rightColumnSections.basic.length > 0" class="space-y-0">
+                  <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">Basic ({{ rightColumnSections.basicCount }})</h6>
+                  <div v-for="card in rightColumnSections.basic" :key="card.id" class="flex">
+                    <span class="w-3 text-right mr-1 font-medium text-xs">{{ card.quantity }}×</span>
+                    <span class="flex-1 text-gray-800 text-xs leading-none">{{ card.cardName }}</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-3 py-1.5 bg-gray-100 border-t text-center">
+            <span class="text-xs text-gray-600">{{ totalCards }} cards total</span>
+            <span v-if="hasConflicts" class="ml-2 text-xs text-red-600 font-medium">
+              • {{ conflictCount }} conflict{{ conflictCount !== 1 ? 's' : '' }}
+            </span>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.flip-card-inner {
+  transform-style: preserve-3d;
+}
+
+.flip-card-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.flip-card-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+.ready-stamp {
+  background: transparent;
+  color: #065f46;
+  padding: 12px 32px;
+  font-weight: 900;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transform: rotate(-35deg);
+  border-top: 4px solid #065f46;
+  border-bottom: 4px solid #065f46;
+  border-left: none;
+  border-right: none;
+}
+
+.deactivated-stamp {
+  color: #6b7280;
+  border-top-color: #6b7280;
+  border-bottom-color: #6b7280;
+  opacity: 0.5;
+}
+</style>
 
 <script setup lang="ts">
 import { sortCardsByFaction, getFactionColorClasses } from '~/utils/cardSorting'
@@ -256,7 +327,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['toggle-active', 'show-conflicts'])
+const emit = defineEmits(['toggle-active', 'show-conflicts', 'delete-deck'])
 
 const isExpanded = ref(false)
 
@@ -301,6 +372,10 @@ const showConflicts = () => {
   emit('show-conflicts', props.deck.id)
 }
 
+const deleteDeck = () => {
+  emit('delete-deck', props.deck.id)
+}
+
 const onImageError = (event: Event) => {
   const target = event.target as HTMLImageElement
   // Fallback to a placeholder or hide the image
@@ -338,4 +413,147 @@ const getCardConflictQuantity = (card: DeckCardData) => {
   )
   return conflict ? conflict.conflictQuantity : 0
 }
+
+// Card type sorting priority for organization within each faction
+const getCardTypePriority = (cardType: string | null | undefined): number => {
+  const typePriority: { [key: string]: number } = {
+    'hero': 0,
+    'ally': 1,
+    'event': 2,
+    'resource': 3,
+    'player side-scheme': 4,
+    'side-scheme': 4, // Alternative naming
+    'support': 5,
+    'upgrade': 6,
+    'basic': 7
+  }
+  
+  const type = cardType?.toLowerCase() || 'basic'
+  return typePriority[type] ?? 8
+}
+
+// Sort cards by type within faction, then alphabetically
+const sortCardsByType = (cards: DeckCardData[]): DeckCardData[] => {
+  return cards.sort((a, b) => {
+    const typePriorityA = getCardTypePriority(a.cardType)
+    const typePriorityB = getCardTypePriority(b.cardType)
+    
+    if (typePriorityA !== typePriorityB) {
+      return typePriorityA - typePriorityB
+    }
+    
+    // Same type, sort alphabetically by name
+    return a.cardName.localeCompare(b.cardName)
+  })
+}
+
+// Group cards by faction (Hero/Aspect/Basic) like physical deck cards
+const heroCards = computed(() => {
+  const cards = props.deck.deckCards?.filter(card => 
+    card.faction === 'hero'
+  ) || []
+  return sortCardsByType(cards)
+})
+
+// Group cards by individual aspects for multi-aspect support
+const aspectCardGroups = computed(() => {
+  const cards = props.deck.deckCards?.filter(card => 
+    card.faction && ['aggression', 'justice', 'leadership', 'protection'].includes(card.faction.toLowerCase())
+  ) || []
+  
+  // Group by faction
+  const groups: { [key: string]: DeckCardData[] } = {}
+  cards.forEach(card => {
+    const faction = card.faction!.toLowerCase()
+    if (!groups[faction]) {
+      groups[faction] = []
+    }
+    groups[faction].push(card)
+  })
+  
+  // Sort each group and return as array of aspect groups
+  return Object.entries(groups).map(([faction, cards]) => ({
+    faction,
+    name: faction.charAt(0).toUpperCase() + faction.slice(1),
+    cards: sortCardsByType(cards),
+    count: cards.reduce((sum, card) => sum + card.quantity, 0)
+  }))
+})
+
+const basicCards = computed(() => {
+  const cards = props.deck.deckCards?.filter(card => 
+    card.faction === 'basic' || card.faction === null || card.faction === ''
+  ) || []
+  return sortCardsByType(cards)
+})
+
+// Get all aspects in the deck
+const deckAspects = computed(() => {
+  return aspectCardGroups.value.map(group => group.faction)
+})
+
+// Determine primary aspect (first one) for header color
+const primaryAspect = computed(() => {
+  return deckAspects.value[0] || null
+})
+
+// Get aspect color for header (uses primary aspect for multi-aspect decks)
+const aspectHeaderColor = computed(() => {
+  if (primaryAspect.value) {
+    switch (primaryAspect.value) {
+      case 'aggression':
+        return 'bg-red-600'
+      case 'leadership':
+        return 'bg-blue-600'
+      case 'protection':
+        return 'bg-green-600'
+      case 'justice':
+        return 'bg-yellow-500'
+      default:
+        return 'bg-gray-600' // Unknown aspect
+    }
+  }
+  return 'bg-gray-600' // No aspect (like Domini "All Action" deck)
+})
+
+// Get aspect hover color for button (uses primary aspect for multi-aspect decks)
+const aspectHoverColor = computed(() => {
+  if (primaryAspect.value) {
+    switch (primaryAspect.value) {
+      case 'aggression':
+        return 'hover:text-red-200'
+      case 'leadership':
+        return 'hover:text-blue-200'
+      case 'protection':
+        return 'hover:text-green-200'
+      case 'justice':
+        return 'hover:text-yellow-200'
+      default:
+        return 'hover:text-gray-200' // Unknown aspect
+    }
+  }
+  return 'hover:text-gray-200' // No aspect (like Domini "All Action" deck)
+})
+
+// Card counts by faction
+const heroCount = computed(() => heroCards.value.reduce((sum, card) => sum + card.quantity, 0))
+const totalAspectCount = computed(() => aspectCardGroups.value.reduce((sum, group) => sum + group.count, 0))
+const basicCount = computed(() => basicCards.value.reduce((sum, card) => sum + card.quantity, 0))
+
+// Two-column layout sections with multi-aspect support
+const leftColumnSections = computed(() => {
+  return {
+    hero: heroCards.value,
+    aspectGroups: aspectCardGroups.value.slice(0, Math.ceil(aspectCardGroups.value.length / 2)),
+    heroCount: heroCount.value
+  }
+})
+
+const rightColumnSections = computed(() => {
+  return {
+    aspectGroups: aspectCardGroups.value.slice(Math.ceil(aspectCardGroups.value.length / 2)),
+    basic: basicCards.value,
+    basicCount: basicCount.value
+  }
+})
 </script>

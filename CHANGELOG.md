@@ -6,7 +6,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - Develop Branch
 
-*No unreleased changes*
+### 🎴 **Card Layout Improvements**
+
+#### **Playing Card Design**
+- **Aspect Ratio**: Cards now use authentic playing card dimensions (66:91 ratio)
+- **Flip Animation**: Smooth 3D card flip animation to view deck contents
+- **Card Back Design**: Physical card-inspired layout with Hero/Aspect/Basic grouping
+- **Multi-Aspect Support**: Proper card grouping for heroes like Gamora and Warlock with multiple aspects
+- **Dynamic Header Colors**: Aspect-based coloring (Red=Aggression, Blue=Leadership, Green=Protection, Yellow=Justice, Grey=No Aspect)
+
+#### **Deck Status Indicators**
+- **Ready for Play Stamp**: Diagonal green stamp when deck has no conflicts and is active
+- **Deactivated Stamp**: Grey diagonal stamp for inactive decks
+- **Visual Opacity**: 50% opacity applied to deactivated deck elements (title, thumbnail, stamps, card backs)
+- **Conditional Hero Thumbnail**: Shows only when conflicts exist, hidden when deck is ready
+
+#### **Conflict Display**
+- **On-Card Conflicts**: Conflicts displayed directly on card front in compact format
+- **Two-Column Layout**: Automatic column split for long conflict lists
+- **Simplified Popup**: Smaller, single-column conflict details modal (max-width: sm)
+- **Conflict Context**: Shows "Used in: [deck names]" or "Not in collection" for each conflict
+
+### 🗑️ **Deck Management**
+
+#### **Deck Deletion**
+- **Delete Button**: Trash icon appears next to Activate button for deactivated decks only
+- **Confirmation Modal**: Clean confirmation dialog before permanent deletion
+- **Cascade Deletion**: Automatically removes deck and all associated cards from database
+- **Security**: Ownership verification before deletion
+
+#### **Deck Sorting**
+- **Updated Order**: Decks sorted by most recently updated first
+- **Activity-Based**: Recently activated/deactivated decks appear at top
+- **Persistent Ordering**: Sort order maintained across page refreshes
+
+### 🎯 **User Experience Enhancements**
+
+#### **Interaction Improvements**
+- **Action Button Protection**: Action buttons bar doesn't trigger card flip
+- **Click Stop Propagation**: Better button targeting without accidental flips
+- **Mobile Layout**: Responsive delete button placement for mobile devices
+- **Stamp Positioning**: Better spacing with mt-8 to avoid overlapping deck titles
+
+#### **Visual Polish**
+- **Stamp Rotation**: Increased to -35deg for more dramatic effect
+- **Border Styling**: Top/bottom borders only on stamps for cleaner look
+- **Green Intensity**: Adjusted stamp colors and transparency for better readability
+- **Footer Fix**: Resolved mobile footer overlap on login/registration forms
+
+### 🔧 **Technical Improvements**
+
+#### **Component Architecture**
+- **Clean Template Structure**: Fixed missing closing tags and template issues
+- **Proper Event Handling**: Added delete-deck emit and handlers
+- **State Management**: Updated store with deck deletion functionality
+- **API Integration**: Leveraged existing DELETE endpoint for deck removal
 
 ---
 

@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
       include: {
         deckCards: true
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { updatedAt: 'desc' }
     })
 
     return {

@@ -155,6 +155,7 @@
           :conflicts="getConflictsForDeck(deck.id)"
           @toggle-active="handleToggleActive"
           @show-conflicts="handleShowConflicts"
+          @delete-deck="handleDeleteDeck"
         />
       </div>
 
@@ -590,14 +591,14 @@
       <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeConflictModal"></div>
         
-        <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-6xl max-h-[90vh] flex flex-col">
-          <div class="bg-white px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-4 flex-shrink-0">
+        <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-sm max-h-[90vh] flex flex-col">
+          <div class="bg-white px-4 pt-4 pb-2 flex-shrink-0">
             <div class="flex items-center justify-between">
               <div class="flex items-center">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
-                <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900">
+                <h3 class="text-base leading-6 font-medium text-gray-900">
                   Conflicts ({{ selectedConflicts.length }})
                 </h3>
               </div>
@@ -612,94 +613,57 @@
             </div>
           </div>
             
-          <div class="flex-1 overflow-y-auto px-3 sm:px-6 space-y-2">
-              <!-- Conflicts grouped by faction -->
-              <div v-for="group in getSortedConflictGroups()" :key="group.title" class="border rounded-md overflow-hidden" :class="getFactionColorClasses(group.faction)">
-                <div class="px-3 py-1.5 border-b" :class="getFactionColorClasses(group.faction)">
-                  <h6 class="text-xs font-semibold uppercase tracking-wider flex items-center">
-                    <span 
-                      class="w-2 h-2 rounded-full mr-2"
-                      :class="getFactionDotClass(group.faction)"
-                    ></span>
-                    {{ group.title }} ({{ group.cards.length }})
-                  </h6>
-                </div>
-                <div class="bg-white">
-                  <!-- Card type groups within faction -->
-                  <div v-for="typeGroup in group.cardTypeGroups" :key="typeGroup.title" class="border-t first:border-t-0 border-gray-100">
-                    <div class="px-3 py-1 bg-gray-50 border-b border-gray-100">
-                      <h6 class="text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        {{ typeGroup.title }} ({{ typeGroup.cards.length }})
-                      </h6>
+          <!-- Single column conflicts list with categories -->
+          <div class="flex-1 overflow-y-auto px-4 py-4">
+            <div class="space-y-3 text-xs leading-tight">
+              <!-- Hero conflicts -->
+              <div v-if="getHeroConflicts().length > 0" class="space-y-1">
+                <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">Hero ({{ getHeroConflicts().length }})</h6>
+                <div class="space-y-0.5">
+                  <div v-for="conflict in getHeroConflicts()" :key="conflict.cardName" class="space-y-0.5">
+                    <div class="flex">
+                      <span class="w-4 text-right mr-2 font-medium text-red-600">{{ conflict.conflictQuantity }}×</span>
+                      <span class="flex-1 text-gray-800 leading-none">{{ conflict.cardName }}</span>
                     </div>
-                    <div
-                      v-for="conflict in typeGroup.cards"
-                      :key="conflict.cardName"
-                      class="px-2 sm:px-3 py-1 hover:bg-gray-50 transition-colors border-b last:border-b-0 border-gray-100"
-                    >
-                      <!-- Mobile: Stack layout -->
-                      <div class="sm:hidden">
-                        <div class="flex items-center justify-between">
-                          <span class="font-medium text-gray-900 text-sm">{{ conflict.cardName }}</span>
-                          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                            -{{ conflict.conflictQuantity }}
-                          </span>
-                        </div>
-                        <div class="flex items-center justify-between mt-0.5">
-                          <span class="text-xs text-gray-600">
-                            Need {{ conflict.totalNeeded }} • Own {{ conflict.totalOwned }}
-                          </span>
-                          <div v-if="conflict.conflictingDecks?.length" class="flex items-center gap-1">
-                            <span class="text-xs text-gray-500">in:</span>
-                            <span class="text-xs text-gray-700 font-medium">{{ conflict.conflictingDecks.join(', ') }}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- Desktop: Column layout -->
-                      <div class="hidden sm:block">
-                        <div class="grid grid-cols-12 gap-3 items-center">
-                          <!-- Card name - 5 columns -->
-                          <div class="col-span-5">
-                            <span class="font-medium text-gray-900 text-sm">{{ conflict.cardName }}</span>
-                          </div>
-                          
-                          <!-- Missing badge - 2 columns -->
-                          <div class="col-span-2">
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                              Missing {{ conflict.conflictQuantity }}
-                            </span>
-                          </div>
-                          
-                          <!-- Need/Own stats - 3 columns -->
-                          <div class="col-span-3">
-                            <span class="text-xs text-gray-600">
-                              Need {{ conflict.totalNeeded }} • Own {{ conflict.totalOwned }}
-                            </span>
-                          </div>
-                          
-                          <!-- Spacer - 2 columns -->
-                          <div class="col-span-2"></div>
-                        </div>
-                        
-                        <!-- Deck usage on second line -->
-                        <div v-if="conflict.conflictingDecks?.length" class="mt-1 pl-3">
-                          <div class="flex items-center flex-wrap gap-1">
-                            <span class="text-xs text-gray-500 mr-1">Used in:</span>
-                            <span
-                              v-for="deckName in conflict.conflictingDecks"
-                              :key="deckName"
-                              class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700"
-                            >
-                              {{ deckName }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                    <div v-if="getConflictUsageText(conflict)" class="ml-6 text-xs text-gray-500">
+                      {{ getConflictUsageText(conflict) }}
                     </div>
                   </div>
                 </div>
               </div>
+
+              <!-- Aspect conflicts -->
+              <div v-if="getAspectConflicts().length > 0" class="space-y-1">
+                <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">{{ getAspectName() }} ({{ getAspectConflicts().length }})</h6>
+                <div class="space-y-0.5">
+                  <div v-for="conflict in getAspectConflicts()" :key="conflict.cardName" class="space-y-0.5">
+                    <div class="flex">
+                      <span class="w-4 text-right mr-2 font-medium text-red-600">{{ conflict.conflictQuantity }}×</span>
+                      <span class="flex-1 text-gray-800 leading-none">{{ conflict.cardName }}</span>
+                    </div>
+                    <div v-if="getConflictUsageText(conflict)" class="ml-6 text-xs text-gray-500">
+                      {{ getConflictUsageText(conflict) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Basic conflicts -->
+              <div v-if="getBasicConflicts().length > 0" class="space-y-1">
+                <h6 class="font-bold text-gray-800 text-xs uppercase tracking-wider">Basic ({{ getBasicConflicts().length }})</h6>
+                <div class="space-y-0.5">
+                  <div v-for="conflict in getBasicConflicts()" :key="conflict.cardName" class="space-y-0.5">
+                    <div class="flex">
+                      <span class="w-4 text-right mr-2 font-medium text-red-600">{{ conflict.conflictQuantity }}×</span>
+                      <span class="flex-1 text-gray-800 leading-none">{{ conflict.cardName }}</span>
+                    </div>
+                    <div v-if="getConflictUsageText(conflict)" class="ml-6 text-xs text-gray-500">
+                      {{ getConflictUsageText(conflict) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="bg-gray-50 px-3 py-2 sm:px-6 sm:py-3 flex-shrink-0 flex justify-between items-center">
             <div class="text-sm text-gray-600">
@@ -710,6 +674,51 @@
               class="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
             >
               Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
+      <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
+        
+        <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-sm">
+          <div class="bg-white px-4 pt-5 pb-4">
+            <div class="flex items-start">
+              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div class="ml-3 text-left">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  Delete Deck
+                </h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">
+                    Are you sure you want to delete "{{ deckToDelete?.name }}"? This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button
+              type="button"
+              @click="confirmDelete"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Delete
+            </button>
+            <button
+              type="button"
+              @click="closeDeleteModal"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Cancel
             </button>
           </div>
         </div>
@@ -737,6 +746,11 @@ const viewMode = ref('cards')
 // Conflict modal
 const showConflictModal = ref(false)
 const selectedConflicts = ref([])
+const currentDeckName = ref('')
+
+// Delete modal
+const showDeleteModal = ref(false)
+const deckToDelete = ref(null)
 
 // Table view expansion
 const expandedDeckIds = ref(new Set())
@@ -782,6 +796,8 @@ const handleToggleActive = async (deckId: number, isActive: boolean) => {
 }
 
 const handleShowConflicts = (deckId: number) => {
+  const deck = decks.value.find(d => d.id === deckId)
+  currentDeckName.value = deck?.name || ''
   selectedConflicts.value = getConflictsForDeck(deckId)
   showConflictModal.value = true
 }
@@ -789,6 +805,87 @@ const handleShowConflicts = (deckId: number) => {
 const closeConflictModal = () => {
   showConflictModal.value = false
   selectedConflicts.value = []
+  currentDeckName.value = ''
+}
+
+const handleDeleteDeck = (deckId: number) => {
+  const deck = decks.value.find(d => d.id === deckId)
+  deckToDelete.value = deck
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  deckToDelete.value = null
+}
+
+const confirmDelete = async () => {
+  if (deckToDelete.value) {
+    await decksStore.deleteDeck(deckToDelete.value.id)
+    closeDeleteModal()
+  }
+}
+
+// Helper methods for conflict grouping in modal
+const getHeroConflicts = () => {
+  return selectedConflicts.value.filter(conflict => 
+    conflict.faction === 'hero'
+  )
+}
+
+const getAspectConflicts = () => {
+  return selectedConflicts.value.filter(conflict => 
+    conflict.faction && ['aggression', 'justice', 'leadership', 'protection'].includes(conflict.faction.toLowerCase())
+  )
+}
+
+const getBasicConflicts = () => {
+  return selectedConflicts.value.filter(conflict => 
+    conflict.faction === 'basic' || conflict.faction === null || conflict.faction === ''
+  )
+}
+
+const getLeftAspectConflicts = () => {
+  const aspectConflicts = getAspectConflicts()
+  return aspectConflicts.slice(0, Math.ceil(aspectConflicts.length / 2))
+}
+
+const getRightAspectConflicts = () => {
+  const aspectConflicts = getAspectConflicts()
+  return aspectConflicts.slice(Math.ceil(aspectConflicts.length / 2))
+}
+
+const getAspectName = () => {
+  const aspectConflict = getAspectConflicts()[0]
+  if (aspectConflict?.faction) {
+    const faction = aspectConflict.faction.toLowerCase()
+    return faction.charAt(0).toUpperCase() + faction.slice(1)
+  }
+  return 'Aspect'
+}
+
+// Filter out current deck from conflicting decks list
+const getOtherConflictingDecks = (conflict: any) => {
+  if (!conflict.conflictingDecks || !currentDeckName.value) {
+    return conflict.conflictingDecks || []
+  }
+  return conflict.conflictingDecks.filter((deckName: string) => deckName !== currentDeckName.value)
+}
+
+// Get conflict usage text - either other decks or not in collection
+const getConflictUsageText = (conflict: any) => {
+  // If totalOwned is 0, card is not in collection
+  if (conflict.totalOwned === 0) {
+    return 'Not in collection'
+  }
+  
+  // Otherwise show other decks using this card
+  const otherDecks = getOtherConflictingDecks(conflict)
+  if (otherDecks.length > 0) {
+    return `Used in: ${otherDecks.join(', ')}`
+  }
+  
+  return null
 }
 
 // Helper methods for table view
