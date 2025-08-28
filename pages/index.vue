@@ -1,5 +1,11 @@
 <template>
   <div class="px-4 sm:px-0">
+    <!-- Collection onboarding banner (shown when user has no packs) -->
+    <CollectionOnboardingBanner 
+      v-if="shouldShowOnboardingBanner"
+      @dismiss="dismissBanner"
+    />
+    
     <!-- Import deck section -->
     <div class="bg-gradient-to-br from-red-50 to-red-100 shadow-sm sm:rounded-xl mb-6 sm:mb-8 border border-red-200">
       <div class="px-6 py-6 sm:p-8">
@@ -732,6 +738,7 @@
 import { sortCardsByFaction, getFactionColorClasses, sortConflictsByFaction } from '~/utils/cardSorting'
 
 const decksStore = useDecksStore()
+const collectionStore = useCollectionStore()
 const { user } = useSession()
 
 // Import functionality
@@ -755,6 +762,17 @@ const deckToDelete = ref(null)
 // Table view expansion
 const expandedDeckIds = ref(new Set())
 
+// Collection onboarding banner
+const bannerDismissed = ref(false)
+
+// Check localStorage during hydration (client-side only)
+if (process.client) {
+  const dismissed = localStorage.getItem('collectionBannerDismissed')
+  if (dismissed === 'true') {
+    bannerDismissed.value = true
+  }
+}
+
 // Computed properties
 const decks = computed(() => decksStore.decks)
 const activeDecks = computed(() => decksStore.activeDecks)
@@ -762,6 +780,23 @@ const inactiveDecks = computed(() => decksStore.inactiveDecks)
 const hasConflicts = computed(() => decksStore.hasConflicts)
 const conflictCount = computed(() => decksStore.conflicts.length)
 const isLoading = computed(() => decksStore.isLoading)
+
+// Collection onboarding logic
+const shouldShowOnboardingBanner = computed(() => {
+  // Check both SSR data and store data for immediate display
+  let totalPacks = 0
+  
+  // First check SSR data (available immediately)
+  if (collectionData.value?.success) {
+    totalPacks = collectionData.value.data.collection.reduce((sum: number, item: any) => sum + item.quantity, 0)
+  } else {
+    // Fallback to store data (after hydration)
+    totalPacks = collectionStore.totalPacks
+  }
+  
+  // Only show if user has no packs and banner hasn't been dismissed
+  return totalPacks === 0 && !bannerDismissed.value
+})
 
 const getConflictsForDeck = (deckId: number) => {
   return decksStore.getConflictsForDeck(deckId)
@@ -957,6 +992,13 @@ const getCardConflictQuantity = (card: any) => {
   return conflict ? conflict.conflictQuantity : 0
 }
 
+// Collection onboarding banner methods
+const dismissBanner = () => {
+  bannerDismissed.value = true
+  // Could also store this in localStorage to persist across sessions
+  localStorage.setItem('collectionBannerDismissed', 'true')
+}
+
 // Helper function for conflict modal
 const getSortedConflictGroups = () => {
   if (!selectedConflicts.value || selectedConflicts.value.length === 0) {
@@ -965,8 +1007,15 @@ const getSortedConflictGroups = () => {
   return sortConflictsByFaction(selectedConflicts.value)
 }
 
+// Server-side data fetching for immediate banner display
+const { data: collectionData } = await useLazyFetch('/api/collection', {
+  default: () => ({ success: false, data: { collection: [] } })
+})
+
 // Load data on mount
 onMounted(() => {
+  // Fetch decks and refresh collection (after SSR)
   decksStore.fetchDecks()
+  collectionStore.fetchCollection()
 })
 </script>
