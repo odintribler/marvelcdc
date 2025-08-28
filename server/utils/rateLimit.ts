@@ -11,20 +11,20 @@ const rateLimitStore = new Map<string, RateLimitEntry>()
 // Rate limit configurations
 export const RATE_LIMITS = {
   // Authentication endpoints
-  login: { attempts: 5, window: ms('15m') }, // 5 attempts per 15 minutes
-  register: { attempts: 3, window: ms('1h') }, // 3 attempts per hour
-  verifyEmail: { attempts: 10, window: ms('1h') }, // 10 attempts per hour
-  resendVerification: { attempts: 3, window: ms('1h') }, // 3 resends per hour
-  forgotPassword: { attempts: 3, window: ms('1h') }, // 3 attempts per hour
-  resetPassword: { attempts: 5, window: ms('1h') }, // 5 attempts per hour
-  
-  // Profile management endpoints  
-  profileUpdate: { attempts: 10, window: ms('1h') }, // 10 profile updates per hour
-  emailChangeVerification: { attempts: 5, window: ms('1h') }, // 5 email verifications per hour
-  profileDelete: { attempts: 2, window: ms('1h') }, // 2 account deletions per hour (safety)
-  
+  login: { attempts: 10, window: ms('10m') }, // 5 attempts per 15 minutes
+  register: { attempts: 10, window: ms('10m') }, // 3 attempts per hour
+  verifyEmail: { attempts: 10, window: ms('10m') }, // 10 attempts per hour
+  resendVerification: { attempts: 10, window: ms('10m') }, // 3 resends per hour
+  forgotPassword: { attempts: 10, window: ms('10m') }, // 3 attempts per hour
+  resetPassword: { attempts: 10, window: ms('10m') }, // 5 attempts per hour
+
+  // Profile management endpoints
+  profileUpdate: { attempts: 10, window: ms('10m') }, // 10 profile updates per hour
+  emailChangeVerification: { attempts: 10, window: ms('10m') }, // 5 email verifications per hour
+  profileDelete: { attempts: 2, window: ms('10m') }, // 2 account deletions per hour (safety)
+
   // General API endpoints
-  api: { attempts: 100, window: ms('15m') }, // 100 requests per 15 minutes
+  api: { attempts: 150, window: ms('15m') }, // 100 requests per 15 minutes
 }
 
 export interface RateLimitConfig {
@@ -66,7 +66,7 @@ export function checkRateLimit(
       count: 1,
       resetTime: now + config.window
     })
-    
+
     return {
       allowed: true,
       remaining: config.attempts - 1,
@@ -81,7 +81,7 @@ export function checkRateLimit(
   if (entry.count > config.attempts) {
     const resetInMs = entry.resetTime - now
     const resetInMinutes = Math.ceil(resetInMs / (1000 * 60))
-    
+
     return {
       allowed: false,
       remaining: 0,
@@ -107,7 +107,7 @@ export function createRateLimitKey(event: any, endpoint: string): string {
 export function getClientIP(event: any): string | null {
   // Check various headers for IP address
   const headers = getHeaders(event)
-  
+
   return (
     headers['cf-connecting-ip'] || // Cloudflare
     headers['x-forwarded-for']?.split(',')[0]?.trim() || // Proxy/Load balancer
@@ -157,33 +157,33 @@ export function withRateLimit(
 // Additional security utilities
 export function validatePasswordStrength(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = []
-  
+
   if (password.length < 6) {
     errors.push('Password must be at least 6 characters long')
   }
-  
+
   if (password.length > 128) {
     errors.push('Password must be less than 128 characters')
   }
-  
+
   if (!/[a-zA-Z]/.test(password)) {
     errors.push('Password must contain at least one letter')
   }
-  
+
   if (!/\d/.test(password)) {
     errors.push('Password must contain at least one number')
   }
-  
+
   // Check for common weak passwords
   const commonPasswords = [
     'password', '123456', '12345678', 'qwerty', 'abc123',
     'password123', 'admin', 'letmein', 'welcome', 'monkey'
   ]
-  
+
   if (commonPasswords.includes(password.toLowerCase())) {
     errors.push('Password is too common. Please choose a stronger password')
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -199,23 +199,23 @@ export function validateEmailFormat(email: string): boolean {
 // Validate username format
 export function validateUsername(username: string): { valid: boolean; errors: string[] } {
   const errors: string[] = []
-  
+
   if (username.length < 3) {
     errors.push('Username must be at least 3 characters long')
   }
-  
+
   if (username.length > 50) {
     errors.push('Username must be less than 50 characters')
   }
-  
+
   if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
     errors.push('Username can only contain letters, numbers, hyphens, and underscores')
   }
-  
+
   if (/^[_-]|[_-]$/.test(username)) {
     errors.push('Username cannot start or end with hyphens or underscores')
   }
-  
+
   return {
     valid: errors.length === 0,
     errors

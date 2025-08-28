@@ -77,7 +77,7 @@ export async function sendEmail(options: EmailOptions) {
       html: options.html,
       text: options.text,
     })
-    
+
     console.log('Email sent successfully:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error) {
@@ -143,21 +143,21 @@ export function getVerificationEmailTemplate(username: string, verificationUrl: 
     </body>
     </html>
   `
-  
+
   const text = `
     Welcome to MarvelCDC!
-    
+
     Hello ${username}!
-    
+
     Thank you for joining MarvelCDC. To get started with managing your Marvel Champions deck collection, please verify your email address by clicking the link below:
-    
+
     ${verificationUrl}
-    
+
     This link will expire in 24 hours.
-    
+
     © 2025 MarvelCDC. All rights reserved.
   `
-  
+
   return { html, text }
 }
 
@@ -209,24 +209,24 @@ export function getPasswordResetEmailTemplate(username: string, resetUrl: string
     </body>
     </html>
   `
-  
+
   const text = `
     Password Reset Request - MarvelCDC
-    
+
     Hello ${username}!
-    
+
     We received a request to reset the password for your MarvelCDC account. If you made this request, click the link below to reset your password:
-    
+
     ${resetUrl}
-    
+
     IMPORTANT SECURITY INFORMATION:
     - This link will expire in 1 hour
     - If you didn't request this reset, please ignore this email
     - Your current password remains unchanged until you complete the reset
-    
+
     © 2025 MarvelCDC. All rights reserved.
   `
-  
+
   return { html, text }
 }
 ```
@@ -266,9 +266,9 @@ model PasswordReset {
   ipAddress String?  @map("ip_address")
   userAgent String?  @map("user_agent")
   createdAt DateTime @default(now()) @map("created_at")
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([token])
   @@map("password_resets")
@@ -321,7 +321,7 @@ export default defineEventHandler(async (event) => {
 
     // Hash password
     const passwordHash = await hashPassword(password)
-    
+
     // Generate email verification token
     const emailToken = generateEmailToken()
     const emailTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
@@ -341,7 +341,7 @@ export default defineEventHandler(async (event) => {
     // Send verification email
     const verificationUrl = createVerificationUrl(emailToken)
     const { html, text } = getVerificationEmailTemplate(username, verificationUrl)
-    
+
     await sendEmail({
       to: email,
       subject: 'Welcome to MarvelCDC - Verify Your Email',
@@ -363,7 +363,7 @@ export default defineEventHandler(async (event) => {
     if (error.statusCode) {
       throw error
     }
-    
+
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error'
@@ -426,7 +426,7 @@ export default defineEventHandler(async (event) => {
     if (error.statusCode) {
       throw error
     }
-    
+
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error'
@@ -451,7 +451,7 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
     const { email } = forgotPasswordSchema.parse(body)
-    
+
     // Get client IP and user agent for security logging
     const ipAddress = getClientIP(event)
     const userAgent = getHeader(event, 'user-agent')
@@ -502,7 +502,7 @@ export default defineEventHandler(async (event) => {
     // Send reset email
     const resetUrl = createPasswordResetUrl(token)
     const { html, text } = getPasswordResetEmailTemplate(user.username, resetUrl)
-    
+
     await sendEmail({
       to: email,
       subject: 'Reset Your MarvelCDC Password',
@@ -515,7 +515,7 @@ export default defineEventHandler(async (event) => {
     if (error.statusCode) {
       throw error
     }
-    
+
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error'
@@ -582,7 +582,7 @@ export default defineEventHandler(async (event) => {
     if (error.statusCode) {
       throw error
     }
-    
+
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error'
@@ -743,7 +743,7 @@ const success = ref(false)
 
 const handleForgotPassword = async () => {
   if (isLoading.value) return
-  
+
   isLoading.value = true
   error.value = ''
 
@@ -752,7 +752,7 @@ const handleForgotPassword = async () => {
       method: 'POST',
       body: form
     })
-    
+
     if (response.success) {
       success.value = true
     }
@@ -891,7 +891,7 @@ const passwordsMatch = computed(() => {
 
 const handleResetPassword = async () => {
   if (isLoading.value || !passwordsMatch.value) return
-  
+
   isLoading.value = true
   error.value = ''
 
@@ -903,7 +903,7 @@ const handleResetPassword = async () => {
         password: form.password
       }
     })
-    
+
     if (response.success) {
       success.value = true
     }
@@ -1007,7 +1007,7 @@ onMounted(async () => {
       method: 'POST',
       body: { token }
     })
-    
+
     if (response.success) {
       success.value = true
     }
@@ -1038,16 +1038,16 @@ export function createRateLimit(config: RateLimitConfig) {
   return async (event: H3Event) => {
     const key = config.keyGenerator ? config.keyGenerator(event) : getClientIP(event) || 'unknown'
     const now = Date.now()
-    
+
     // Clean up expired entries
     for (const [k, v] of rateLimitMap.entries()) {
       if (now > v.resetTime) {
         rateLimitMap.delete(k)
       }
     }
-    
+
     const current = rateLimitMap.get(key)
-    
+
     if (!current) {
       rateLimitMap.set(key, {
         count: 1,
@@ -1055,7 +1055,7 @@ export function createRateLimit(config: RateLimitConfig) {
       })
       return
     }
-    
+
     if (now > current.resetTime) {
       rateLimitMap.set(key, {
         count: 1,
@@ -1063,32 +1063,32 @@ export function createRateLimit(config: RateLimitConfig) {
       })
       return
     }
-    
+
     if (current.count >= config.maxRequests) {
       throw createError({
         statusCode: 429,
         statusMessage: 'Too many requests'
       })
     }
-    
+
     current.count++
   }
 }
 
 // Specific rate limiters
 export const authRateLimit = createRateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 5,
-})
-
-export const loginRateLimit = createRateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour  
+  windowMs: 10 * 60 * 1000, // 10 minutes
   maxRequests: 10,
 })
 
+export const loginRateLimit = createRateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  maxRequests: 50,
+})
+
 export const passwordResetRateLimit = createRateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  maxRequests: 3,
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  maxRequests: 30,
   keyGenerator: (event) => {
     const body = readBody(event)
     return `reset:${body.email}`
@@ -1103,7 +1103,7 @@ export const passwordResetRateLimit = createRateLimit({
 // Add email verification check to requireAuth
 export async function requireVerifiedAuth(event: H3Event): Promise<{ session: Session; user: User; userId: number }> {
   const result = await validateSession(event)
-  
+
   if (!result) {
     throw createError({
       statusCode: 401,
