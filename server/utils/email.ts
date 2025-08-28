@@ -4,7 +4,17 @@ import type { Transporter } from 'nodemailer'
 
 // Email configuration
 const BREVO_SMTP_HOST = 'smtp-relay.brevo.com'
-const BREVO_SMTP_PORT = 587
+// Try alternative port if 587 is blocked (2525 is commonly used as alternative)
+const BREVO_SMTP_PORT = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587
+
+// Extended timeouts for production environments with DNS/network issues
+const CONNECTION_TIMEOUT = 60000 // 60 seconds
+const GREETING_TIMEOUT = 60000 // 60 seconds
+const SOCKET_TIMEOUT = 60000 // 60 seconds
+
+// Retry configuration
+const MAX_RETRY_ATTEMPTS = 3
+const RETRY_DELAY = 2000 // 2 seconds between retries
 
 // Token configuration
 const EMAIL_TOKEN_LENGTH = 32
@@ -40,15 +50,38 @@ function createTransporter(): Transporter {
     throw new Error('FROM_EMAIL environment variable is required')
   }
 
-  return nodemailer.createTransport({
+  const transporterOptions: any = {
     host: BREVO_SMTP_HOST,
     port: BREVO_SMTP_PORT,
-    secure: false, // TLS
+    secure: false, // use STARTTLS
     auth: {
-      user: process.env.BREVO_LOGIN_EMAIL, // Your Brevo account email
-      pass: process.env.BREVO_API_KEY, // Your SMTP API key
+      user: process.env.BREVO_LOGIN_EMAIL,
+      pass: process.env.BREVO_API_KEY,
     },
-  })
+    // Extended timeouts for production environments
+    connectionTimeout: CONNECTION_TIMEOUT,
+    greetingTimeout: GREETING_TIMEOUT,
+    socketTimeout: SOCKET_TIMEOUT,
+    // Pool connections for better performance
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    // Debug logging in production for troubleshooting
+    logger: process.env.NODE_ENV === 'production',
+    debug: process.env.DEBUG_EMAIL === 'true',
+  }
+
+  // Additional TLS options if needed
+  if (process.env.NODE_ENV === 'production') {
+    transporterOptions.tls = {
+      // Allow connection even with self-signed certificates
+      rejectUnauthorized: false,
+      // Minimum TLS version
+      minVersion: 'TLSv1.2',
+    }
+  }
+
+  return nodemailer.createTransporter(transporterOptions)
 }
 
 function getTransporter(): Transporter {
@@ -58,14 +91,12 @@ function getTransporter(): Transporter {
   return transporter
 }
 
-// Core email sending function
+// Core email sending function with retry logic
 export async function sendEmail(options: EmailOptions): Promise<void> {
   const fromEmail = process.env.FROM_EMAIL
   if (!fromEmail) {
     throw new Error('FROM_EMAIL environment variable is required')
   }
-
-  const transporter = getTransporter()
 
   const mailOptions = {
     from: `"MarvelCDC" <${fromEmail}>`,
@@ -75,21 +106,60 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     text: options.text,
   }
 
-  try {
-    const result = await transporter.sendMail(mailOptions)
-    console.log('Email sent successfully:', result.messageId)
-    return result
-  } catch (error) {
-    console.error('Detailed email send error:', {
-      error: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response,
-      responseCode: error.responseCode,
-      stack: error.stack
-    })
-    throw new Error(`Failed to send email: ${error.message}`)
+  let lastError: any
+  
+  // Retry logic for transient failures
+  for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+    try {
+      // Recreate transporter on each retry to handle connection issues
+      if (attempt > 1) {
+        console.log(`Email send attempt ${attempt}/${MAX_RETRY_ATTEMPTS} after ${RETRY_DELAY}ms delay...`)
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY))
+        // Force recreation of transporter
+        transporter = null
+      }
+      
+      const currentTransporter = getTransporter()
+      const result = await currentTransporter.sendMail(mailOptions)
+      console.log(`Email sent successfully on attempt ${attempt}:`, result.messageId)
+      return result
+    } catch (error: any) {
+      lastError = error
+      console.error(`Email send attempt ${attempt} failed:`, {
+        error: error.message,
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode,
+        attempt: attempt,
+        maxAttempts: MAX_RETRY_ATTEMPTS
+      })
+      
+      // Don't retry on permanent errors
+      if (error.responseCode >= 500 && error.responseCode < 600 && attempt < MAX_RETRY_ATTEMPTS) {
+        // Server error, worth retrying
+        continue
+      } else if (error.code === 'ETIMEDOUT' && attempt < MAX_RETRY_ATTEMPTS) {
+        // Timeout, worth retrying
+        continue
+      } else if (error.code === 'ECONNREFUSED' && attempt < MAX_RETRY_ATTEMPTS) {
+        // Connection refused, might be temporary
+        continue
+      } else {
+        // Permanent error or last attempt
+        break
+      }
+    }
   }
+  
+  // All attempts failed
+  console.error('All email send attempts failed. Final error:', {
+    error: lastError?.message,
+    code: lastError?.code,
+    smtp_port: BREVO_SMTP_PORT,
+    environment: process.env.NODE_ENV
+  })
+  throw new Error(`Failed to send email after ${MAX_RETRY_ATTEMPTS} attempts: ${lastError?.message}`)
 }
 
 // Token generation utilities
